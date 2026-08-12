@@ -93,6 +93,19 @@
   pointer-events: none;
 }
 
+.room-bg {
+  background: linear-gradient(180deg, #F5E6D3 0%, #E8D5C0 55%, #D2B48C 55%, #C4A06A 100%);
+}
+
+@keyframes petIdle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.pet-idle {
+  animation: petIdle 3s ease-in-out infinite;
+}
+
 .pet-card:hover {
   transform: translateY(-4px) scale(1.05);
 }
