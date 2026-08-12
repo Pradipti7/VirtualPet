@@ -1,0 +1,42 @@
+const express = require('express')
+const cors = require('cors')
+
+const app = express()
+const PORT = process.env.PORT || 3001
+
+app.use(cors())
+app.use(express.json())
+
+let pet = {
+  name: 'Tamagotchi',
+  hunger: 50,
+  happiness: 50,
+  energy: 50
+}
+
+app.get('/api/pet', (req, res) => {
+  res.json(pet)
+})
+
+app.post('/api/pet/feed', (req, res) => {
+  pet.hunger = Math.max(0, pet.hunger - 15)
+  pet.happiness = Math.min(100, pet.happiness + 5)
+  res.json(pet)
+})
+
+app.post('/api/pet/play', (req, res) => {
+  pet.happiness = Math.min(100, pet.happiness + 15)
+  pet.energy = Math.max(0, pet.energy - 10)
+  pet.hunger = Math.min(100, pet.hunger + 5)
+  res.json(pet)
+})
+
+app.post('/api/pet/sleep', (req, res) => {
+  pet.energy = Math.min(100, pet.energy + 20)
+  pet.hunger = Math.min(100, pet.hunger + 10)
+  res.json(pet)
+})
+
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`)
+})
