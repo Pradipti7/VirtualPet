@@ -9,12 +9,27 @@ app.use(express.json())
 
 let pet = {
   name: 'Tamagotchi',
+  type: 'cat',
   hunger: 50,
   happiness: 50,
-  energy: 50
+  energy: 50,
+  adopted: false
 }
 
 app.get('/api/pet', (req, res) => {
+  res.json(pet)
+})
+
+app.post('/api/pet/init', (req, res) => {
+  const { name, type } = req.body
+  pet = {
+    name: name || 'Buddy',
+    type: type || 'cat',
+    hunger: 50,
+    happiness: 50,
+    energy: 50,
+    adopted: true
+  }
   res.json(pet)
 })
 

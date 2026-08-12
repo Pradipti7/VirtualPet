@@ -1,21 +1,53 @@
 import { useState, useEffect } from 'react'
+import LandingPage from './pages/LandingPage'
+import StoryPage from './pages/StoryPage'
+import PetSelectionPage from './pages/PetSelectionPage'
+import PetNamingPage from './pages/PetNamingPage'
+import PetCarePage from './pages/PetCarePage'
 
 function App() {
+  const [phase, setPhase] = useState('landing')
   const [pet, setPet] = useState(null)
+  const [chosenAnimal, setChosenAnimal] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetch('/api/pet')
-      .then(res => res.json())
-      .then(data => {
-        setPet(data)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.adopted) {
+          setPet(data)
+          setPhase('ready')
+        }
         setLoading(false)
       })
       .catch(() => {
-        setPet({ name: 'Tamagotchi', hunger: 50, happiness: 50, energy: 50 })
         setLoading(false)
       })
   }, [])
+
+  const initPet = async (name) => {
+    try {
+      const res = await fetch('/api/pet/init', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, type: chosenAnimal.type }),
+      })
+      const data = await res.json()
+      setPet(data)
+      setPhase('ready')
+    } catch {
+      setPet({
+        name,
+        type: chosenAnimal.type,
+        hunger: 50,
+        happiness: 50,
+        energy: 50,
+        adopted: true,
+      })
+      setPhase('ready')
+    }
+  }
 
   const updatePet = async (action) => {
     try {
@@ -23,11 +55,11 @@ function App() {
       const data = await res.json()
       setPet(data)
     } catch {
-      setPet(prev => ({
+      setPet((prev) => ({
         ...prev,
         hunger: Math.max(0, prev.hunger - 10),
         happiness: Math.min(100, prev.happiness + 10),
-        energy: Math.min(100, prev.energy + 10)
+        energy: Math.min(100, prev.energy + 10),
       }))
     }
   }
@@ -40,66 +72,40 @@ function App() {
     )
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full">
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">{pet.name}</h1>
+  if (phase === 'ready' && pet) {
+    return <PetCarePage pet={pet} onAction={updatePet} />
+  }
 
-        <div className="space-y-4 mb-8">
-          <div>
-            <div className="flex justify-between text-sm text-gray-600 mb-1">
-              <span>Hunger</span>
-              <span>{pet.hunger}%</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
-              <div className="bg-red-500 h-3 rounded-full transition-all" style={{width: `${pet.hunger}%`}}></div>
-            </div>
-          </div>
+  if (phase === 'landing') {
+    return <LandingPage onStart={() => setPhase('story1')} />
+  }
 
-          <div>
-            <div className="flex justify-between text-sm text-gray-600 mb-1">
-              <span>Happiness</span>
-              <span>{pet.happiness}%</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
-              <div className="bg-yellow-500 h-3 rounded-full transition-all" style={{width: `${pet.happiness}%`}}></div>
-            </div>
-          </div>
+  if (phase === 'story1' || phase === 'story2' || phase === 'story3') {
+    return (
+      <StoryPage
+        phase={phase}
+        chosenAnimal={chosenAnimal}
+        onNext={(next) => setPhase(next)}
+      />
+    )
+  }
 
-          <div>
-            <div className="flex justify-between text-sm text-gray-600 mb-1">
-              <span>Energy</span>
-              <span>{pet.energy}%</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
-              <div className="bg-green-500 h-3 rounded-full transition-all" style={{width: `${pet.energy}%`}}></div>
-            </div>
-          </div>
-        </div>
+  if (phase === 'choose') {
+    return (
+      <PetSelectionPage
+        onSelect={(animal) => {
+          setChosenAnimal(animal)
+          setPhase('story3')
+        }}
+      />
+    )
+  }
 
-        <div className="grid grid-cols-3 gap-3">
-          <button
-            onClick={() => updatePet('feed')}
-            className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-xl transition-colors"
-          >
-            Feed
-          </button>
-          <button
-            onClick={() => updatePet('play')}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-xl transition-colors"
-          >
-            Play
-          </button>
-          <button
-            onClick={() => updatePet('sleep')}
-            className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-4 rounded-xl transition-colors"
-          >
-            Sleep
-          </button>
-        </div>
-      </div>
-    </div>
-  )
+  if (phase === 'name') {
+    return <PetNamingPage chosenAnimal={chosenAnimal} onConfirm={initPet} />
+  }
+
+  return null
 }
 
 export default App
