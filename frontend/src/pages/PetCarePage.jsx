@@ -35,14 +35,14 @@ function PetCarePage({ pet, onAction }) {
       </div>
 
       {/* Pet name - top left */}
-      <div className="absolute top-4 left-4 z-20">
+      <div className="absolute top-4 left-0 z-20">
         <h1 className="text-xl font-bold text-gray-800 drop-shadow">{pet.name}</h1>
       </div>
 
-      {/* Pet - center bottom, sitting on floor */}
-      <div className="flex-1 flex items-end justify-center pb-24 relative z-10">
-        <div className="pet-idle">
-          <PetAvatar type={pet.type} className="w-52 h-52 drop-shadow-xl" />
+      {/* Pet - walking across screen */}
+      <div className="absolute bottom-20 left-0 z-10">
+        <div className={pet.type === 'bird' ? 'pet-fly' : 'pet-walk'}>
+          <PetAvatar type={pet.type} className="w-40 h-40 drop-shadow-lg" />
         </div>
       </div>
 

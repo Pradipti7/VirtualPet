@@ -1,241 +1,413 @@
+import React, { useMemo } from "react"
+
+/* =========================================================================
+   Pixel-art pet renderer
+   -------------------------------------------------------------------------
+   Each pet is described as a small set of "shapes" (ellipse / circle /
+   polygon / capsule) using the SAME coordinate system as a normal 128x128
+   viewBox SVG. Those shapes get rasterized onto a 32x32 pixel grid with a
+   traced 2px outline, which is what gives the chunky pixel-art look.
+   Shapes are grouped into layers ("base", "tail", "earL", "wing", ...) so
+   individual parts can be animated independently with CSS transforms while
+   everything else stays crisp and static.
+   ========================================================================= */
+
+const GRID = 48 // higher resolution = softer, less blocky pixel art
+const PIXEL = 128 / GRID
+const OUTLINE = "#2e2015"
+
+function pointInEllipse(px, py, cx, cy, rx, ry) {
+  const dx = (px - cx) / rx
+  const dy = (py - cy) / ry
+  return dx * dx + dy * dy <= 1
+}
+function pointInCircle(px, py, cx, cy, r) {
+  const dx = px - cx
+  const dy = py - cy
+  return dx * dx + dy * dy <= r * r
+}
+function pointInPolygon(px, py, pts) {
+  let inside = false
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const [xi, yi] = pts[i]
+    const [xj, yj] = pts[j]
+    const intersect =
+      yi > py !== yj > py && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi
+    if (intersect) inside = !inside
+  }
+  return inside
+}
+function pointInCapsule(px, py, x1, y1, x2, y2, r) {
+  const dx = x2 - x1
+  const dy = y2 - y1
+  const len2 = dx * dx + dy * dy
+  let t = len2 === 0 ? 0 : ((px - x1) * dx + (py - y1) * dy) / len2
+  t = Math.max(0, Math.min(1, t))
+  const cx = x1 + t * dx
+  const cy = y1 + t * dy
+  const ddx = px - cx
+  const ddy = py - cy
+  return ddx * ddx + ddy * ddy <= r * r
+}
+function pointInShape(shape, px, py) {
+  switch (shape.type) {
+    case "ellipse":
+      return pointInEllipse(px, py, shape.cx, shape.cy, shape.rx, shape.ry)
+    case "circle":
+      return pointInCircle(px, py, shape.cx, shape.cy, shape.r)
+    case "polygon":
+      return pointInPolygon(px, py, shape.points)
+    case "capsule":
+      return pointInCapsule(px, py, shape.x1, shape.y1, shape.x2, shape.y2, shape.r)
+    default:
+      return false
+  }
+}
+
+// Rasterize a list of shapes into merged (run-length encoded) <rect> data,
+// including a traced outline around the layer's own silhouette.
+function rasterizeLayer(shapes, outlineWidth = 2) {
+  if (!shapes || shapes.length === 0) return []
+  const grid = Array.from({ length: GRID }, () => Array(GRID).fill(null))
+  for (const shape of shapes) {
+    for (let gy = 0; gy < GRID; gy++) {
+      for (let gx = 0; gx < GRID; gx++) {
+        const px = gx * PIXEL + PIXEL / 2
+        const py = gy * PIXEL + PIXEL / 2
+        if (pointInShape(shape, px, py)) grid[gy][gx] = shape.fill
+      }
+    }
+  }
+  const out = grid.map((row) => row.slice())
+  let solid = grid.map((row) => row.map((c) => c !== null))
+  for (let ring = 0; ring < outlineWidth; ring++) {
+    const next = solid.map((row) => row.slice())
+    for (let gy = 0; gy < GRID; gy++) {
+      for (let gx = 0; gx < GRID; gx++) {
+        if (!solid[gy][gx]) {
+          const neighbors = [
+            [gy - 1, gx],
+            [gy + 1, gx],
+            [gy, gx - 1],
+            [gy, gx + 1],
+          ]
+          for (const [ny, nx] of neighbors) {
+            if (ny >= 0 && ny < GRID && nx >= 0 && nx < GRID && solid[ny][nx]) {
+              out[gy][gx] = OUTLINE
+              next[gy][gx] = true
+              break
+            }
+          }
+        }
+      }
+    }
+    solid = next
+  }
+  // run-length encode each row so we emit far fewer <rect> elements
+  const rects = []
+  for (let gy = 0; gy < GRID; gy++) {
+    let x = 0
+    while (x < GRID) {
+      const color = out[gy][x]
+      if (!color) {
+        x++
+        continue
+      }
+      let x2 = x + 1
+      while (x2 < GRID && out[gy][x2] === color) x2++
+      rects.push({
+        x: x * PIXEL,
+        y: gy * PIXEL,
+        w: (x2 - x) * PIXEL,
+        h: PIXEL,
+        fill: color,
+      })
+      x = x2
+    }
+  }
+  return rects
+}
+
+function PixelLayer({ shapes }) {
+  const rects = useMemo(() => rasterizeLayer(shapes), [shapes])
+  return (
+    <g>
+      {rects.map((r, i) => (
+        <rect key={i} x={r.x} y={r.y} width={r.w} height={r.h} fill={r.fill} shapeRendering="crispEdges" />
+      ))}
+    </g>
+  )
+}
+
+// Animated wrapper: renders a layer inside a <g> with its own transform-origin
+// so it can be nudged by a CSS keyframe animation without disturbing the rest.
+function AnimatedLayer({ shapes, originX, originY, animationClass }) {
+  if (!shapes || shapes.length === 0) return null
+  return (
+    <g className={animationClass} style={{ transformOrigin: `${originX}px ${originY}px` }}>
+      <PixelLayer shapes={shapes} />
+    </g>
+  )
+}
+
+/* =========================================================================
+   Shared idle-animation keyframes (rendered once by PetAvatar)
+   ========================================================================= */
+function PetStyles() {
+  return (
+    <style>{`
+      @keyframes pet-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2.5px); } }
+      @keyframes pet-blink { 0%, 92%, 100% { transform: scaleY(0.05); } 96% { transform: scaleY(1); } }
+      @keyframes pet-tail-wag { 0%,100% { transform: rotate(-8deg); } 50% { transform: rotate(10deg); } }
+      @keyframes pet-tail-wag-fast { 0%,100% { transform: rotate(-14deg); } 50% { transform: rotate(14deg); } }
+      @keyframes pet-ear-twitch { 0%,80%,100% { transform: rotate(0deg); } 90% { transform: rotate(-10deg); } }
+      @keyframes pet-ear-flop { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(6deg); } }
+      @keyframes pet-wing-flap { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(24deg); } }
+      @keyframes pet-tongue-pulse { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(1.15); } }
+      @keyframes pet-pouch-pulse { 0%,100% { transform: scaleX(1); } 50% { transform: scaleX(1.12); } }
+      .pet-bob { animation: pet-bob 2.4s ease-in-out infinite; transform-origin: 64px 96px; }
+      .pet-blink-l { animation: pet-blink 4.5s ease-in-out infinite; }
+      .pet-blink-r { animation: pet-blink 4.5s ease-in-out infinite; }
+      .pet-tail-wag { animation: pet-tail-wag 1.4s ease-in-out infinite; }
+      .pet-tail-wag-fast { animation: pet-tail-wag-fast 0.5s ease-in-out infinite; }
+      .pet-ear-twitch-l { animation: pet-ear-twitch 3.6s ease-in-out infinite; }
+      .pet-ear-twitch-r { animation: pet-ear-twitch 3.6s ease-in-out infinite 0.4s; }
+      .pet-ear-flop { animation: pet-ear-flop 0.5s ease-in-out infinite; }
+      .pet-wing-flap { animation: pet-wing-flap 0.45s ease-in-out infinite; }
+      .pet-tongue-pulse { animation: pet-tongue-pulse 0.7s ease-in-out infinite; }
+      .pet-pouch-pulse-l { animation: pet-pouch-pulse 1.4s ease-in-out infinite; }
+      .pet-pouch-pulse-r { animation: pet-pouch-pulse 1.4s ease-in-out infinite 0.3s; }
+    `}</style>
+  )
+}
+
+/* =========================================================================
+   Per-animal shape data
+   ========================================================================= */
+
+const CAT = {
+  base: [
+    { type: "ellipse", cx: 66, cy: 68, rx: 26, ry: 15, fill: "#F4A460" }, // body
+    { type: "ellipse", cx: 66, cy: 73, rx: 17, ry: 10, fill: "#FFE4B5" }, // belly
+    { type: "ellipse", cx: 45, cy: 84, rx: 6, ry: 5, fill: "#F4A460" },
+    { type: "ellipse", cx: 58, cy: 85, rx: 6, ry: 5, fill: "#F4A460" },
+    { type: "ellipse", cx: 74, cy: 85, rx: 6, ry: 5, fill: "#F4A460" },
+    { type: "ellipse", cx: 87, cy: 84, rx: 6, ry: 5, fill: "#F4A460" },
+    { type: "circle", cx: 38, cy: 55, r: 22, fill: "#F4A460" }, // head
+    { type: "polygon", points: [[22, 46], [16, 22], [35, 40]], fill: "#F4A460" },
+    { type: "polygon", points: [[50, 40], [58, 22], [41, 38]], fill: "#F4A460" },
+    { type: "polygon", points: [[25, 42], [21, 29], [33, 39]], fill: "#FFB6C1" },
+    { type: "polygon", points: [[47, 39], [53, 28], [40, 37]], fill: "#FFB6C1" },
+    { type: "circle", cx: 22, cy: 63, r: 4, fill: "#FFB6C1" },
+    { type: "circle", cx: 50, cy: 61, r: 4, fill: "#FFB6C1" },
+    { type: "circle", cx: 29, cy: 54, r: 4.5, fill: "#3a2a1a" }, // eyes
+    { type: "circle", cx: 45, cy: 52, r: 4.5, fill: "#3a2a1a" },
+    { type: "circle", cx: 30.5, cy: 52, r: 1.5, fill: "#ffffff" },
+    { type: "circle", cx: 46.5, cy: 50, r: 1.5, fill: "#ffffff" },
+    { type: "polygon", points: [[34, 60], [38, 65], [42, 60]], fill: "#FF69B4" }, // nose
+  ],
+  tail: [
+    { type: "capsule", x1: 94, y1: 66, x2: 106, y2: 48, r: 6, fill: "#F4A460" },
+    { type: "circle", cx: 108, cy: 40, r: 6, fill: "#F4A460" },
+  ],
+  earL: [{ type: "polygon", points: [[22, 46], [16, 22], [35, 40]], fill: "#F4A460" }, { type: "polygon", points: [[25, 42], [21, 29], [33, 39]], fill: "#FFB6C1" }],
+  earR: [{ type: "polygon", points: [[50, 40], [58, 22], [41, 38]], fill: "#F4A460" }, { type: "polygon", points: [[47, 39], [53, 28], [40, 37]], fill: "#FFB6C1" }],
+  eyelidL: [{ type: "ellipse", cx: 29, cy: 54, rx: 5.5, ry: 5.5, fill: "#F4A460" }],
+  eyelidR: [{ type: "ellipse", cx: 45, cy: 52, rx: 5.5, ry: 5.5, fill: "#F4A460" }],
+}
+
+const DOG = {
+  base: [
+    { type: "ellipse", cx: 68, cy: 68, rx: 28, ry: 15, fill: "#DEB887" },
+    { type: "ellipse", cx: 68, cy: 73, rx: 19, ry: 10, fill: "#FAEBD7" },
+    { type: "ellipse", cx: 46, cy: 84, rx: 6.5, ry: 5, fill: "#DEB887" },
+    { type: "ellipse", cx: 60, cy: 85, rx: 6.5, ry: 5, fill: "#DEB887" },
+    { type: "ellipse", cx: 76, cy: 85, rx: 6.5, ry: 5, fill: "#DEB887" },
+    { type: "ellipse", cx: 90, cy: 84, rx: 6.5, ry: 5, fill: "#DEB887" },
+    { type: "circle", cx: 38, cy: 54, r: 23, fill: "#DEB887" }, // head — drawn after the ear so it covers the overlap and only the true hanging part of the ear shows
+    { type: "circle", cx: 38, cy: 58, r: 15, fill: "#F5DEB3" }, // face patch
+    { type: "circle", cx: 22, cy: 63, r: 4, fill: "#FFB6C1" },
+    { type: "circle", cx: 50, cy: 60, r: 4, fill: "#FFB6C1" },
+    { type: "ellipse", cx: 32, cy: 63, rx: 10, ry: 8, fill: "#F5DEB3" }, // snout
+    { type: "circle", cx: 30, cy: 52, r: 4.5, fill: "#3a2a1a" },
+    { type: "circle", cx: 45, cy: 50, r: 4.5, fill: "#3a2a1a" },
+    { type: "circle", cx: 31.5, cy: 50, r: 1.5, fill: "#ffffff" },
+    { type: "circle", cx: 46.5, cy: 48, r: 1.5, fill: "#ffffff" },
+    { type: "ellipse", cx: 28, cy: 60, rx: 5, ry: 4, fill: "#2C1810" }, // nose
+  ],
+  tail: [
+    { type: "capsule", x1: 94, y1: 64, x2: 107, y2: 46, r: 6, fill: "#DEB887" },
+    { type: "circle", cx: 109, cy: 40, r: 6, fill: "#DEB887" },
+  ],
+  ear: [{ type: "ellipse", cx: 15, cy: 50, rx: 10, ry: 21, fill: "#8B4513" }],
+  tongue: [{ type: "ellipse", cx: 28, cy: 71, rx: 4, ry: 5, fill: "#FF69B4" }],
+  eyelidL: [{ type: "ellipse", cx: 30, cy: 52, rx: 5.5, ry: 5.5, fill: "#F5DEB3" }],
+  eyelidR: [{ type: "ellipse", cx: 45, cy: 50, rx: 5.5, ry: 5.5, fill: "#F5DEB3" }],
+}
+
+const BUNNY = {
+  base: [
+    { type: "circle", cx: 90, cy: 70, r: 7, fill: "#ffffff" }, // tail (static puff)
+    { type: "ellipse", cx: 63, cy: 68, rx: 24, ry: 15, fill: "#F5F0E6" },
+    { type: "ellipse", cx: 63, cy: 73, rx: 16, ry: 10, fill: "#ffffff" },
+    { type: "ellipse", cx: 44, cy: 84, rx: 6, ry: 4.5, fill: "#F5F0E6" },
+    { type: "ellipse", cx: 57, cy: 85, rx: 6, ry: 4.5, fill: "#F5F0E6" },
+    { type: "ellipse", cx: 70, cy: 85, rx: 6, ry: 4.5, fill: "#F5F0E6" },
+    { type: "ellipse", cx: 83, cy: 84, rx: 6, ry: 4.5, fill: "#F5F0E6" },
+    { type: "circle", cx: 36, cy: 56, r: 22, fill: "#F5F0E6" }, // head
+    { type: "ellipse", cx: 26, cy: 22, rx: 7, ry: 21, fill: "#F5F0E6" },
+    { type: "ellipse", cx: 44, cy: 20, rx: 7, ry: 21, fill: "#F5F0E6" },
+    { type: "ellipse", cx: 26, cy: 23, rx: 3.6, ry: 15, fill: "#FFB6C1" },
+    { type: "ellipse", cx: 44, cy: 21, rx: 3.6, ry: 15, fill: "#FFB6C1" },
+    { type: "circle", cx: 20, cy: 62, r: 5, fill: "#FFB6C1" },
+    { type: "circle", cx: 48, cy: 60, r: 5, fill: "#FFB6C1" },
+    { type: "circle", cx: 28, cy: 53, r: 4.5, fill: "#1a1a1a" },
+    { type: "circle", cx: 43, cy: 51, r: 4.5, fill: "#1a1a1a" },
+    { type: "circle", cx: 29.5, cy: 51, r: 1.6, fill: "#ffffff" },
+    { type: "circle", cx: 44.5, cy: 49, r: 1.6, fill: "#ffffff" },
+    { type: "ellipse", cx: 34, cy: 62, rx: 4, ry: 3, fill: "#FF69B4" },
+  ],
+  earL: [
+    { type: "ellipse", cx: 26, cy: 22, rx: 7, ry: 21, fill: "#F5F0E6" },
+    { type: "ellipse", cx: 26, cy: 23, rx: 3.6, ry: 15, fill: "#FFB6C1" },
+  ],
+  earR: [
+    { type: "ellipse", cx: 44, cy: 20, rx: 7, ry: 21, fill: "#F5F0E6" },
+    { type: "ellipse", cx: 44, cy: 21, rx: 3.6, ry: 15, fill: "#FFB6C1" },
+  ],
+  eyelidL: [{ type: "ellipse", cx: 28, cy: 53, rx: 5.5, ry: 5.5, fill: "#F5F0E6" }],
+  eyelidR: [{ type: "ellipse", cx: 43, cy: 51, rx: 5.5, ry: 5.5, fill: "#F5F0E6" }],
+}
+
+const HAMSTER = {
+  base: [
+    { type: "ellipse", cx: 66, cy: 70, rx: 25, ry: 15, fill: "#DEB887" },
+    { type: "ellipse", cx: 66, cy: 75, rx: 16, ry: 10, fill: "#FAEBD7" },
+    { type: "ellipse", cx: 46, cy: 86, rx: 6, ry: 4.5, fill: "#DEB887" },
+    { type: "ellipse", cx: 59, cy: 87, rx: 6, ry: 4.5, fill: "#DEB887" },
+    { type: "ellipse", cx: 74, cy: 87, rx: 6, ry: 4.5, fill: "#DEB887" },
+    { type: "ellipse", cx: 88, cy: 86, rx: 6, ry: 4.5, fill: "#DEB887" },
+    { type: "circle", cx: 38, cy: 55, r: 22, fill: "#DEB887" }, // head
+    { type: "circle", cx: 19, cy: 40, r: 9, fill: "#C4A06A" },
+    { type: "circle", cx: 53, cy: 38, r: 9, fill: "#C4A06A" },
+    { type: "circle", cx: 19, cy: 40, r: 5, fill: "#FFB6C1" },
+    { type: "circle", cx: 53, cy: 38, r: 5, fill: "#FFB6C1" },
+    { type: "circle", cx: 20, cy: 62, r: 4, fill: "#FFB6C1" },
+    { type: "circle", cx: 53, cy: 60, r: 4, fill: "#FFB6C1" },
+    { type: "circle", cx: 30, cy: 53, r: 4.5, fill: "#1a1a1a" },
+    { type: "circle", cx: 45, cy: 51, r: 4.5, fill: "#1a1a1a" },
+    { type: "circle", cx: 31.5, cy: 51, r: 1.5, fill: "#ffffff" },
+    { type: "circle", cx: 46.5, cy: 49, r: 1.5, fill: "#ffffff" },
+    { type: "ellipse", cx: 36, cy: 62, rx: 4, ry: 3, fill: "#FF69B4" },
+  ],
+  pouchL: [{ type: "ellipse", cx: 21, cy: 65, rx: 12, ry: 9, fill: "#F5DEB3" }],
+  pouchR: [{ type: "ellipse", cx: 53, cy: 63, rx: 12, ry: 9, fill: "#F5DEB3" }],
+  eyelidL: [{ type: "ellipse", cx: 30, cy: 53, rx: 5.5, ry: 5.5, fill: "#DEB887" }],
+  eyelidR: [{ type: "ellipse", cx: 45, cy: 51, rx: 5.5, ry: 5.5, fill: "#DEB887" }],
+}
+
+const BIRD = {
+  base: [
+    { type: "capsule", x1: 78, y1: 80, x2: 78, y2: 96, r: 3, fill: "#87CEEB" }, // center tail feather
+    { type: "circle", cx: 76, cy: 64, r: 22, fill: "#87CEEB" }, // body
+    { type: "ellipse", cx: 74, cy: 71, rx: 13, ry: 14, fill: "#E8F4FD" }, // belly
+    { type: "circle", cx: 76, cy: 36, r: 17, fill: "#87CEEB" }, // head
+    { type: "circle", cx: 64, cy: 40, r: 3.5, fill: "#FFB6C1" },
+    { type: "circle", cx: 88, cy: 40, r: 3.5, fill: "#FFB6C1" },
+    { type: "circle", cx: 69, cy: 34, r: 4, fill: "#1a1a1a" },
+    { type: "circle", cx: 83, cy: 34, r: 4, fill: "#1a1a1a" },
+    { type: "circle", cx: 70.5, cy: 32.5, r: 1.4, fill: "#ffffff" },
+    { type: "circle", cx: 84.5, cy: 32.5, r: 1.4, fill: "#ffffff" },
+    { type: "polygon", points: [[76, 40], [71, 46], [81, 46]], fill: "#FFA500" },
+    { type: "circle", cx: 68, cy: 88, r: 4, fill: "#FFA500" },
+    { type: "circle", cx: 82, cy: 88, r: 4, fill: "#FFA500" },
+  ],
+  tailFeathers: [
+    { type: "capsule", x1: 70, y1: 76, x2: 58, y2: 90, r: 3, fill: "#5FA8D3" },
+    { type: "capsule", x1: 86, y1: 76, x2: 98, y2: 90, r: 3, fill: "#5FA8D3" },
+  ],
+  wing: [{ type: "ellipse", cx: 54, cy: 60, rx: 10, ry: 16, fill: "#5FA8D3" }],
+  eyelidL: [{ type: "ellipse", cx: 69, cy: 34, rx: 5, ry: 5, fill: "#87CEEB" }],
+  eyelidR: [{ type: "ellipse", cx: 83, cy: 34, rx: 5, ry: 5, fill: "#87CEEB" }],
+}
+
+/* =========================================================================
+   Pet components
+   ========================================================================= */
+
 function CatPet({ className }) {
   return (
-    <svg viewBox="0 0 200 200" className={className}>
-      {/* Tail */}
-      <path d="M145,145 Q175,130 170,100 Q168,88 160,85" fill="none" stroke="#F4A460" strokeWidth="8" strokeLinecap="round">
-        <animate attributeName="d" values="M145,145 Q175,130 170,100 Q168,88 160,85;M145,145 Q180,125 172,95 Q170,82 162,80;M145,145 Q175,130 170,100 Q168,88 160,85" dur="2.5s" repeatCount="indefinite"/>
-      </path>
-      {/* Body */}
-      <ellipse cx="100" cy="140" rx="45" ry="35" fill="#F4A460"/>
-      {/* Belly */}
-      <ellipse cx="100" cy="145" rx="28" ry="22" fill="#FFDEAD"/>
-      {/* Front paws */}
-      <ellipse cx="78" cy="168" rx="12" ry="8" fill="#F4A460"/>
-      <ellipse cx="122" cy="168" rx="12" ry="8" fill="#F4A460"/>
-      {/* Paw pads */}
-      <circle cx="78" cy="170" r="3" fill="#FFB6C1"/>
-      <circle cx="122" cy="170" r="3" fill="#FFB6C1"/>
-      {/* Head */}
-      <circle cx="100" cy="80" r="38" fill="#F4A460"/>
-      {/* Ears */}
-      <polygon points="68,58 62,22 85,50" fill="#F4A460"/>
-      <polygon points="132,58 138,22 115,50" fill="#F4A460"/>
-      {/* Inner ears */}
-      <polygon points="70,55 66,30 82,50" fill="#FFB6C1"/>
-      <polygon points="130,55 134,30 118,50" fill="#FFB6C1"/>
-      {/* Face markings */}
-      <path d="M75,70 Q100,60 125,70" fill="none" stroke="#D2691E" strokeWidth="1" opacity="0.3"/>
-      {/* Eyes */}
-      <ellipse cx="85" cy="78" rx="9" ry="10" fill="white"/>
-      <ellipse cx="115" cy="78" rx="9" ry="10" fill="white"/>
-      <ellipse cx="86" cy="79" rx="5" ry="6" fill="#4A7C59"/>
-      <ellipse cx="116" cy="79" rx="5" ry="6" fill="#4A7C59"/>
-      <ellipse cx="86" cy="79" rx="3" ry="5" fill="#1a1a1a"/>
-      <ellipse cx="116" cy="79" rx="3" ry="5" fill="#1a1a1a"/>
-      <circle cx="88" cy="76" r="2" fill="white"/>
-      <circle cx="118" cy="76" r="2" fill="white"/>
-      {/* Nose */}
-      <path d="M97,90 L100,94 L103,90 Z" fill="#FF69B4"/>
-      {/* Mouth */}
-      <path d="M100,94 Q96,100 93,97" fill="none" stroke="#D2691E" strokeWidth="1.2"/>
-      <path d="M100,94 Q104,100 107,97" fill="none" stroke="#D2691E" strokeWidth="1.2"/>
-      {/* Whiskers */}
-      <line x1="55" y1="88" x2="78" y2="90" stroke="#D2691E" strokeWidth="0.8" opacity="0.6"/>
-      <line x1="55" y1="93" x2="78" y2="93" stroke="#D2691E" strokeWidth="0.8" opacity="0.6"/>
-      <line x1="55" y1="98" x2="78" y2="96" stroke="#D2691E" strokeWidth="0.8" opacity="0.6"/>
-      <line x1="145" y1="88" x2="122" y2="90" stroke="#D2691E" strokeWidth="0.8" opacity="0.6"/>
-      <line x1="145" y1="93" x2="122" y2="93" stroke="#D2691E" strokeWidth="0.8" opacity="0.6"/>
-      <line x1="145" y1="98" x2="122" y2="96" stroke="#D2691E" strokeWidth="0.8" opacity="0.6"/>
-      {/* Cheeks */}
-      <circle cx="75" cy="92" r="6" fill="#FFB6C1" opacity="0.4"/>
-      <circle cx="125" cy="92" r="6" fill="#FFB6C1" opacity="0.4"/>
+    <svg viewBox="0 0 128 128" className={className}>
+      <PetStyles />
+      <g className="pet-bob">
+        <AnimatedLayer shapes={CAT.tail} originX={94} originY={66} animationClass="pet-tail-wag" />
+        <PixelLayer shapes={CAT.base} />
+        <AnimatedLayer shapes={CAT.earL} originX={25} originY={40} animationClass="pet-ear-twitch-l" />
+        <AnimatedLayer shapes={CAT.earR} originX={47} originY={38} animationClass="pet-ear-twitch-r" />
+        <AnimatedLayer shapes={CAT.eyelidL} originX={29} originY={49} animationClass="pet-blink-l" />
+        <AnimatedLayer shapes={CAT.eyelidR} originX={45} originY={47} animationClass="pet-blink-r" />
+      </g>
     </svg>
   )
 }
 
 function DogPet({ className }) {
   return (
-    <svg viewBox="0 0 200 200" className={className}>
-      {/* Tail */}
-      <path d="M148,135 Q170,120 165,95" fill="none" stroke="#DEB887" strokeWidth="10" strokeLinecap="round">
-        <animate attributeName="d" values="M148,135 Q170,120 165,95;M148,135 Q175,115 170,90;M148,135 Q170,120 165,95" dur="0.5s" repeatCount="indefinite"/>
-      </path>
-      {/* Body */}
-      <ellipse cx="100" cy="140" rx="45" ry="35" fill="#DEB887"/>
-      {/* Belly */}
-      <ellipse cx="100" cy="148" rx="30" ry="22" fill="#FAEBD7"/>
-      {/* Front paws */}
-      <ellipse cx="78" cy="168" rx="13" ry="8" fill="#DEB887"/>
-      <ellipse cx="122" cy="168" rx="13" ry="8" fill="#DEB887"/>
-      {/* Paw pads */}
-      <circle cx="78" cy="170" r="3" fill="#D2691E"/>
-      <circle cx="122" cy="170" r="3" fill="#D2691E"/>
-      {/* Head */}
-      <circle cx="100" cy="80" r="40" fill="#DEB887"/>
-      {/* Ears */}
-      <ellipse cx="60" cy="65" rx="16" ry="32" fill="#8B4513" transform="rotate(-20 60 65)">
-        <animateTransform attributeName="transform" type="rotate" values="-20 60 65;-15 60 65;-20 60 65" dur="2s" repeatCount="indefinite"/>
-      </ellipse>
-      <ellipse cx="140" cy="65" rx="16" ry="32" fill="#8B4513" transform="rotate(20 140 65)">
-        <animateTransform attributeName="transform" type="rotate" values="20 140 65;15 140 65;20 140 65" dur="2.2s" repeatCount="indefinite"/>
-      </ellipse>
-      {/* Face patch */}
-      <circle cx="100" cy="85" r="22" fill="#F5DEB3"/>
-      {/* Eyes */}
-      <circle cx="85" cy="76" r="7" fill="white"/>
-      <circle cx="115" cy="76" r="7" fill="white"/>
-      <circle cx="86" cy="77" r="4.5" fill="#4A2F1B"/>
-      <circle cx="116" cy="77" r="4.5" fill="#4A2F1B"/>
-      <circle cx="88" cy="74" r="1.8" fill="white"/>
-      <circle cx="118" cy="74" r="1.8" fill="white"/>
-      {/* Snout */}
-      <ellipse cx="100" cy="93" rx="16" ry="12" fill="#F5DEB3"/>
-      {/* Nose */}
-      <ellipse cx="100" cy="89" rx="7" ry="5" fill="#2C1810"/>
-      <ellipse cx="100" cy="88" rx="2" ry="1" fill="#555" opacity="0.4"/>
-      {/* Mouth */}
-      <path d="M100,94 Q95,102 90,98" fill="none" stroke="#8B4513" strokeWidth="1.5"/>
-      <path d="M100,94 Q105,102 110,98" fill="none" stroke="#8B4513" strokeWidth="1.5"/>
-      {/* Tongue */}
-      <ellipse cx="100" cy="102" rx="6" ry="8" fill="#FF69B4">
-        <animate attributeName="ry" values="8;9;8" dur="1.5s" repeatCount="indefinite"/>
-      </ellipse>
-      {/* Cheeks */}
-      <circle cx="75" cy="90" r="5" fill="#FFB6C1" opacity="0.4"/>
-      <circle cx="125" cy="90" r="5" fill="#FFB6C1" opacity="0.4"/>
+    <svg viewBox="0 0 128 128" className={className}>
+      <PetStyles />
+      <g className="pet-bob">
+        <AnimatedLayer shapes={DOG.tail} originX={94} originY={64} animationClass="pet-tail-wag-fast" />
+        <PixelLayer shapes={DOG.base} />
+        <AnimatedLayer shapes={DOG.ear} originX={17} originY={30} animationClass="pet-ear-flop" />
+        <AnimatedLayer shapes={DOG.tongue} originX={27} originY={66} animationClass="pet-tongue-pulse" />
+        <AnimatedLayer shapes={DOG.eyelidL} originX={27} originY={47} animationClass="pet-blink-l" />
+        <AnimatedLayer shapes={DOG.eyelidR} originX={42} originY={45} animationClass="pet-blink-r" />
+      </g>
     </svg>
   )
 }
 
 function BunnyPet({ className }) {
   return (
-    <svg viewBox="0 0 200 200" className={className}>
-      {/* Tail */}
-      <circle cx="145" cy="148" r="12" fill="white" stroke="#E8D5C0" strokeWidth="1">
-        <animate attributeName="r" values="12;13;12" dur="2s" repeatCount="indefinite"/>
-      </circle>
-      {/* Body */}
-      <ellipse cx="100" cy="140" rx="40" ry="35" fill="#F5F5DC"/>
-      {/* Belly */}
-      <ellipse cx="100" cy="145" rx="26" ry="22" fill="white"/>
-      {/* Front paws */}
-      <ellipse cx="78" cy="168" rx="12" ry="7" fill="#F5F5DC"/>
-      <ellipse cx="122" cy="168" rx="12" ry="7" fill="#F5F5DC"/>
-      {/* Head */}
-      <circle cx="100" cy="82" r="36" fill="#F5F5DC"/>
-      {/* Ears */}
-      <ellipse cx="80" cy="35" rx="12" ry="38" fill="#F5F5DC" stroke="#E8D5C0" strokeWidth="1">
-        <animateTransform attributeName="transform" type="rotate" values="-8 80 70;8 80 70;-8 80 70" dur="3s" repeatCount="indefinite"/>
-      </ellipse>
-      <ellipse cx="120" cy="35" rx="12" ry="38" fill="#F5F5DC" stroke="#E8D5C0" strokeWidth="1">
-        <animateTransform attributeName="transform" type="rotate" values="8 120 70;-8 120 70;8 120 70" dur="3.2s" repeatCount="indefinite"/>
-      </ellipse>
-      {/* Inner ears */}
-      <ellipse cx="80" cy="35" rx="7" ry="28" fill="#FFB6C1"/>
-      <ellipse cx="120" cy="35" rx="7" ry="28" fill="#FFB6C1"/>
-      {/* Eyes */}
-      <circle cx="87" cy="78" r="7" fill="#1a1a1a"/>
-      <circle cx="113" cy="78" r="7" fill="#1a1a1a"/>
-      <circle cx="89" cy="76" r="2.5" fill="white"/>
-      <circle cx="115" cy="76" r="2.5" fill="white"/>
-      {/* Nose */}
-      <ellipse cx="100" cy="90" rx="4" ry="3" fill="#FF69B4"/>
-      {/* Mouth */}
-      <path d="M100,93 L96,98" fill="none" stroke="#D2B48C" strokeWidth="1.2"/>
-      <path d="M100,93 L104,98" fill="none" stroke="#D2B48C" strokeWidth="1.2"/>
-      {/* Cheeks */}
-      <circle cx="76" cy="88" r="7" fill="#FFB6C1" opacity="0.4"/>
-      <circle cx="124" cy="88" r="7" fill="#FFB6C1" opacity="0.4"/>
-      {/* Buck teeth */}
-      <rect x="96" y="95" width="4" height="5" rx="1" fill="white"/>
-      <rect x="100" y="95" width="4" height="5" rx="1" fill="white"/>
+    <svg viewBox="0 0 128 128" className={className}>
+      <PetStyles />
+      <g className="pet-bob">
+        <PixelLayer shapes={BUNNY.base} />
+        <AnimatedLayer shapes={BUNNY.earL} originX={26} originY={43} animationClass="pet-ear-twitch-l" />
+        <AnimatedLayer shapes={BUNNY.earR} originX={44} originY={41} animationClass="pet-ear-twitch-r" />
+        <AnimatedLayer shapes={BUNNY.eyelidL} originX={28} originY={48} animationClass="pet-blink-l" />
+        <AnimatedLayer shapes={BUNNY.eyelidR} originX={43} originY={46} animationClass="pet-blink-r" />
+      </g>
     </svg>
   )
 }
 
 function BirdPet({ className }) {
   return (
-    <svg viewBox="0 0 200 200" className={className}>
-      {/* Tail feathers */}
-      <path d="M85,155 Q65,175 55,190" fill="none" stroke="#5FA8D3" strokeWidth="5" strokeLinecap="round"/>
-      <path d="M100,158 Q100,178 100,195" fill="none" stroke="#87CEEB" strokeWidth="5" strokeLinecap="round"/>
-      <path d="M115,155 Q135,175 145,190" fill="none" stroke="#5FA8D3" strokeWidth="5" strokeLinecap="round"/>
-      {/* Body */}
-      <ellipse cx="100" cy="125" rx="35" ry="38" fill="#87CEEB"/>
-      {/* Belly */}
-      <ellipse cx="100" cy="132" rx="22" ry="28" fill="#E8F4FD"/>
-      {/* Wings */}
-      <ellipse cx="60" cy="115" rx="16" ry="30" fill="#5FA8D3" transform="rotate(-10 60 115)">
-        <animateTransform attributeName="transform" type="rotate" values="-10 60 115;-18 60 115;-10 60 115" dur="1.5s" repeatCount="indefinite"/>
-      </ellipse>
-      <ellipse cx="140" cy="115" rx="16" ry="30" fill="#5FA8D3" transform="rotate(10 140 115)">
-        <animateTransform attributeName="transform" type="rotate" values="10 140 115;18 140 115;10 140 115" dur="1.5s" repeatCount="indefinite"/>
-      </ellipse>
-      {/* Head */}
-      <circle cx="100" cy="72" r="28" fill="#87CEEB">
-        <animate attributeName="cy" values="72;70;72" dur="2.5s" repeatCount="indefinite"/>
-      </circle>
-      {/* Eyes */}
-      <circle cx="89" cy="68" r="6" fill="white"/>
-      <circle cx="111" cy="68" r="6" fill="white"/>
-      <circle cx="90" cy="69" r="3.5" fill="#1a1a1a"/>
-      <circle cx="112" cy="69" r="3.5" fill="#1a1a1a"/>
-      <circle cx="91" cy="67" r="1.2" fill="white"/>
-      <circle cx="113" cy="67" r="1.2" fill="white"/>
-      {/* Beak */}
-      <polygon points="100,78 93,85 107,85" fill="#FFA500"/>
-      <line x1="100" y1="78" x2="100" y2="85" stroke="#E89400" strokeWidth="0.8"/>
-      {/* Cheeks */}
-      <circle cx="80" cy="78" r="5" fill="#FFB6C1" opacity="0.5"/>
-      <circle cx="120" cy="78" r="5" fill="#FFB6C1" opacity="0.5"/>
-      {/* Feet */}
-      <line x1="88" y1="162" x2="80" y2="180" stroke="#FFA500" strokeWidth="3" strokeLinecap="round"/>
-      <line x1="88" y1="162" x2="90" y2="181" stroke="#FFA500" strokeWidth="3" strokeLinecap="round"/>
-      <line x1="112" y1="162" x2="120" y2="180" stroke="#FFA500" strokeWidth="3" strokeLinecap="round"/>
-      <line x1="112" y1="162" x2="110" y2="181" stroke="#FFA500" strokeWidth="3" strokeLinecap="round"/>
+    <svg viewBox="0 0 128 128" className={className}>
+      <PetStyles />
+      <g className="pet-bob">
+        <AnimatedLayer shapes={BIRD.tailFeathers} originX={78} originY={80} animationClass="pet-tail-wag" />
+        <PixelLayer shapes={BIRD.base} />
+        <AnimatedLayer shapes={BIRD.wing} originX={58} originY={50} animationClass="pet-wing-flap" />
+        <AnimatedLayer shapes={BIRD.eyelidL} originX={69} originY={29} animationClass="pet-blink-l" />
+        <AnimatedLayer shapes={BIRD.eyelidR} originX={83} originY={29} animationClass="pet-blink-r" />
+      </g>
     </svg>
   )
 }
 
 function HamsterPet({ className }) {
   return (
-    <svg viewBox="0 0 200 200" className={className}>
-      {/* Body */}
-      <ellipse cx="100" cy="140" rx="42" ry="35" fill="#DEB887"/>
-      {/* Belly */}
-      <ellipse cx="100" cy="145" rx="28" ry="24" fill="#FAEBD7"/>
-      {/* Front paws */}
-      <ellipse cx="78" cy="168" rx="11" ry="6" fill="#DEB887"/>
-      <ellipse cx="122" cy="168" rx="11" ry="6" fill="#DEB887"/>
-      {/* Head */}
-      <circle cx="100" cy="85" r="38" fill="#DEB887"/>
-      {/* Ears */}
-      <circle cx="65" cy="58" r="14" fill="#C4A06A"/>
-      <circle cx="135" cy="58" r="14" fill="#C4A06A"/>
-      <circle cx="65" cy="58" r="8" fill="#FFB6C1"/>
-      <circle cx="135" cy="58" r="8" fill="#FFB6C1"/>
-      {/* Cheek pouches */}
-      <ellipse cx="68" cy="95" rx="18" ry="14" fill="#F5DEB3">
-        <animate attributeName="rx" values="18;20;18" dur="2s" repeatCount="indefinite"/>
-      </ellipse>
-      <ellipse cx="132" cy="95" rx="18" ry="14" fill="#F5DEB3">
-        <animate attributeName="rx" values="18;20;18" dur="2s" repeatCount="indefinite"/>
-      </ellipse>
-      {/* Face stripe */}
-      <path d="M85,65 Q100,58 115,65" fill="none" stroke="#C4A06A" strokeWidth="3" opacity="0.5"/>
-      {/* Eyes */}
-      <circle cx="86" cy="80" r="6" fill="#1a1a1a"/>
-      <circle cx="114" cy="80" r="6" fill="#1a1a1a"/>
-      <circle cx="88" cy="78" r="2" fill="white"/>
-      <circle cx="116" cy="78" r="2" fill="white"/>
-      {/* Nose */}
-      <ellipse cx="100" cy="90" rx="4" ry="3" fill="#FF69B4"/>
-      {/* Mouth */}
-      <path d="M100,93 Q96,98 93,95" fill="none" stroke="#8B7355" strokeWidth="1.2"/>
-      <path d="M100,93 Q104,98 107,95" fill="none" stroke="#8B7355" strokeWidth="1.2"/>
-      {/* Cheeks */}
-      <circle cx="74" cy="92" r="6" fill="#FFB6C1" opacity="0.4"/>
-      <circle cx="126" cy="92" r="6" fill="#FFB6C1" opacity="0.4"/>
+    <svg viewBox="0 0 128 128" className={className}>
+      <PetStyles />
+      <g className="pet-bob">
+        <PixelLayer shapes={HAMSTER.base} />
+        <AnimatedLayer shapes={HAMSTER.pouchL} originX={21} originY={65} animationClass="pet-pouch-pulse-l" />
+        <AnimatedLayer shapes={HAMSTER.pouchR} originX={53} originY={63} animationClass="pet-pouch-pulse-r" />
+        <AnimatedLayer shapes={HAMSTER.eyelidL} originX={30} originY={48} animationClass="pet-blink-l" />
+        <AnimatedLayer shapes={HAMSTER.eyelidR} originX={45} originY={46} animationClass="pet-blink-r" />
+      </g>
     </svg>
   )
 }
