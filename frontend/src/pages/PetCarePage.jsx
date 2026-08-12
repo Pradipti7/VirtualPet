@@ -6,12 +6,14 @@ const ACTIONS = [
   { action: 'feed', label: 'Feed', color: 'bg-orange-500 hover:bg-orange-600' },
   { action: 'play', label: 'Play', color: 'bg-blue-500 hover:bg-blue-600' },
   { action: 'sleep', label: 'Sleep', color: 'bg-purple-500 hover:bg-purple-600' },
+  { action: 'bath', label: 'Bath', color: 'bg-cyan-500 hover:bg-cyan-600' },
 ]
 
 const STATS = [
   { key: 'hunger', label: 'Hunger', color: 'bg-red-500' },
   { key: 'happiness', label: 'Happiness', color: 'bg-yellow-500' },
   { key: 'energy', label: 'Energy', color: 'bg-green-500' },
+  { key: 'cleanliness', label: 'Cleanliness', color: 'bg-cyan-500' },
 ]
 
 function PetCarePage({ pet, onAction }) {
@@ -34,7 +36,7 @@ function PetCarePage({ pet, onAction }) {
           ))}
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           {ACTIONS.map((a) => (
             <ActionButton
               key={a.action}
