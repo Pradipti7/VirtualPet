@@ -94,41 +94,7 @@
 }
 
 .room-bg {
-  background:
-    linear-gradient(180deg, #F5E6D3 0%, #E8D5C0 60%, #D4B896 60%, #C4A882 100%);
-  position: relative;
-}
-
-.room-bg::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 60%;
-  background:
-    radial-gradient(ellipse 80px 120px at 15% 50%, #D4A574 0%, transparent 100%),
-    radial-gradient(ellipse 60px 100px at 85% 40%, #C9956A 0%, transparent 100%),
-    radial-gradient(circle 40px at 50% 30%, #FFF8DC 0%, transparent 100%);
-  pointer-events: none;
-}
-
-.room-bg::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 40%;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      #C4A06A 0px,
-      #C4A06A 80px,
-      #B8945E 80px,
-      #B8945E 82px
-    );
-  pointer-events: none;
+  background: linear-gradient(180deg, #F5E6D3 0%, #E8D5C0 55%, #D2B48C 55%, #C4A06A 100%);
 }
 
 @keyframes petIdle {

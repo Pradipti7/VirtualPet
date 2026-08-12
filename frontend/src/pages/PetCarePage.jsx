@@ -1,6 +1,5 @@
 import { ANIMALS } from '../data/animals'
 import StatBar from '../components/StatBar'
-import ActionButton from '../components/ActionButton'
 import PetAvatar from '../components/PetAvatar'
 
 const ACTIONS = [
@@ -19,11 +18,11 @@ const STATS = [
 
 function PetCarePage({ pet, onAction }) {
   return (
-    <div className="room-bg min-h-screen w-full flex flex-col justify-between overflow-hidden">
+    <div className="room-bg min-h-screen w-full flex flex-col relative overflow-hidden">
       {/* Stats - top right */}
-      <div className="absolute top-4 right-4 w-56 bg-white/90 backdrop-blur rounded-2xl shadow-lg p-4 z-10">
-        <h2 className="text-sm font-bold text-gray-700 mb-3 text-center">Pet Status</h2>
-        <div className="space-y-3">
+      <div className="absolute top-4 right-4 w-52 bg-white/90 backdrop-blur rounded-2xl shadow-lg p-4 z-20">
+        <h2 className="text-xs font-bold text-gray-700 mb-2 text-center">Pet Status</h2>
+        <div className="space-y-2">
           {STATS.map((stat) => (
             <StatBar
               key={stat.key}
@@ -36,28 +35,28 @@ function PetCarePage({ pet, onAction }) {
       </div>
 
       {/* Pet name - top left */}
-      <div className="absolute top-4 left-4 z-10">
-        <h1 className="text-2xl font-bold text-white drop-shadow-lg">{pet.name}</h1>
+      <div className="absolute top-4 left-4 z-20">
+        <h1 className="text-xl font-bold text-gray-800 drop-shadow">{pet.name}</h1>
       </div>
 
-      {/* Pet - center */}
-      <div className="flex-1 flex items-end justify-center pb-8">
+      {/* Pet - center bottom, sitting on floor */}
+      <div className="flex-1 flex items-end justify-center pb-24 relative z-10">
         <div className="pet-idle">
-          <PetAvatar type={pet.type} className="w-64 h-64 drop-shadow-2xl" />
+          <PetAvatar type={pet.type} className="w-52 h-52 drop-shadow-xl" />
         </div>
       </div>
 
-      {/* Action buttons - bottom */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/40 to-transparent pt-12 pb-6 px-4">
-        <div className="flex justify-center gap-4 max-w-lg mx-auto">
+      {/* Action buttons - very bottom */}
+      <div className="absolute bottom-0 left-0 right-0 pb-4 pt-8 px-4 z-20 bg-gradient-to-t from-amber-700/50 to-transparent">
+        <div className="flex justify-center gap-3 max-w-md mx-auto">
           {ACTIONS.map((a) => (
             <button
               key={a.action}
               onClick={() => onAction(a.action)}
-              className={`${a.color} text-white font-semibold py-4 px-6 rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-lg flex flex-col items-center gap-1 min-w-[80px]`}
+              className={`${a.color} text-white font-medium py-2 px-4 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-md flex items-center gap-1.5 text-sm`}
             >
-              <span className="text-2xl">{a.emoji}</span>
-              <span className="text-sm">{a.label}</span>
+              <span className="text-base">{a.emoji}</span>
+              <span>{a.label}</span>
             </button>
           ))}
         </div>
