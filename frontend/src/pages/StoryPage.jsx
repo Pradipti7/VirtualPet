@@ -23,7 +23,7 @@ function StoryPage({ phase, chosenAnimal, onNext }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center p-4">
+    <div className="min-h-screen field-bg flex items-center justify-center p-4">
       <StoryScreen text={story.text} onNext={() => onNext(story.next)} />
     </div>
   )

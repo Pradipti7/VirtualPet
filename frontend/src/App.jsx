@@ -5,6 +5,14 @@ import PetSelectionPage from './pages/PetSelectionPage'
 import PetNamingPage from './pages/PetNamingPage'
 import PetCarePage from './pages/PetCarePage'
 
+function FieldWrapper({ children }) {
+  return (
+    <div className="min-h-screen field-bg flex items-center justify-center p-4">
+      {children}
+    </div>
+  )
+}
+
 function App() {
   const [phase, setPhase] = useState('landing')
   const [pet, setPet] = useState(null)
@@ -92,17 +100,23 @@ function App() {
 
   if (phase === 'choose') {
     return (
-      <PetSelectionPage
-        onSelect={(animal) => {
-          setChosenAnimal(animal)
-          setPhase('story3')
-        }}
-      />
+      <FieldWrapper>
+        <PetSelectionPage
+          onSelect={(animal) => {
+            setChosenAnimal(animal)
+            setPhase('story3')
+          }}
+        />
+      </FieldWrapper>
     )
   }
 
   if (phase === 'name') {
-    return <PetNamingPage chosenAnimal={chosenAnimal} onConfirm={initPet} />
+    return (
+      <FieldWrapper>
+        <PetNamingPage chosenAnimal={chosenAnimal} onConfirm={initPet} />
+      </FieldWrapper>
+    )
   }
 
   return null
