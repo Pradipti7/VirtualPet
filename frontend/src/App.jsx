@@ -3,6 +3,7 @@ import LandingPage from './pages/LandingPage'
 import StoryPage from './pages/StoryPage'
 import PetSelectionPage from './pages/PetSelectionPage'
 import PetNamingPage from './pages/PetNamingPage'
+import PetIntroPage from './pages/PetIntroPage'
 import PetCarePage from './pages/PetCarePage'
 
 function FieldWrapper({ children }) {
@@ -43,7 +44,7 @@ function App() {
       })
       const data = await res.json()
       setPet(data)
-      setPhase('ready')
+      setPhase('intro')
     } catch {
       setPet({
         name,
@@ -51,9 +52,10 @@ function App() {
         hunger: 50,
         happiness: 50,
         energy: 50,
+        cleanliness: 50,
         adopted: true,
       })
-      setPhase('ready')
+      setPhase('intro')
     }
   }
 
@@ -68,6 +70,7 @@ function App() {
         hunger: Math.max(0, prev.hunger - 10),
         happiness: Math.min(100, prev.happiness + 10),
         energy: Math.min(100, prev.energy + 10),
+        cleanliness: Math.max(0, (prev.cleanliness || 50) - 10),
       }))
     }
   }
@@ -78,6 +81,10 @@ function App() {
         <span className="text-white text-2xl">Loading...</span>
       </div>
     )
+  }
+
+  if (phase === 'intro' && pet) {
+    return <PetIntroPage pet={pet} onReady={() => setPhase('ready')} />
   }
 
   if (phase === 'ready' && pet) {
