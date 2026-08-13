@@ -79,13 +79,7 @@ function App() {
       const data = await res.json()
       setPet(data)
     } catch {
-      setPet((prev) => ({
-        ...prev,
-        hunger: Math.max(0, prev.hunger - 10),
-        happiness: Math.min(100, prev.happiness + 10),
-        energy: Math.min(100, prev.energy + 10),
-        cleanliness: Math.max(0, (prev.cleanliness || 50) - 10),
-      }))
+      // API unavailable - no-op
     }
   }
 
