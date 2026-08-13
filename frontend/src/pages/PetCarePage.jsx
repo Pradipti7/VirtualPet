@@ -29,20 +29,39 @@ const FLOOR_CORNERS = [
 ]
 
 function PetCarePage({ pet, onAction }) {
-  const [corner, setCorner] = useState(0)
+  const [corner, setCorner] = useState(1)
+  const [sitting, setSitting] = useState(false)
+  const [movingRight, setMovingRight] = useState(false)
   const isFlying = pet.type === 'bird'
   const corners = isFlying ? ALL_CORNERS : FLOOR_CORNERS
+  const n = corners.length
 
   useEffect(() => {
-    setCorner(0)
-    const id = setInterval(() => setCorner((c) => (c + 1) % corners.length), 4000)
+    setCorner(1)
+    setSitting(false)
+    setMovingRight(false)
+    let moves = 0
+    const id = setInterval(() => {
+      moves++
+      if (moves % 3 === 0) {
+        setSitting(true)
+        setTimeout(() => setSitting(false), 4000)
+      } else {
+        setCorner((c) => {
+          const next = (c + 1) % n
+          const diff = (next - c + n) % n
+          setMovingRight(n === 2 ? c === 0 : diff === 1)
+          return next
+        })
+      }
+    }, 4000)
     return () => clearInterval(id)
-  }, [corners.length])
+  }, [n])
 
-  const pos = corners[corner]
-  const flipRight = isFlying
-    ? corner === 1 || corner === 3
-    : corner === 1
+  const pos = sitting
+    ? { x: 'calc(50vw - 80px)', y: isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)' }
+    : corners[corner]
+  const flipRight = !sitting && movingRight
 
   return (
     <div className="room-bg min-h-screen w-full flex flex-col relative overflow-hidden">
@@ -76,7 +95,7 @@ function PetCarePage({ pet, onAction }) {
           transform: flipRight ? 'scaleX(-1)' : 'none',
         }}
       >
-        <div className="pet-bob">
+        <div className={sitting ? '' : 'pet-bob'}>
           <PetAvatar type={pet.type} className="w-40 h-40 drop-shadow-lg" />
         </div>
       </div>
