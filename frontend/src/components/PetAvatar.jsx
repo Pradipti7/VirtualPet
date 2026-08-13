@@ -165,6 +165,7 @@ function PetStyles() {
       @keyframes pet-wing-flap { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(24deg); } }
       @keyframes pet-tongue-pulse { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(1.15); } }
       @keyframes pet-pouch-pulse { 0%,100% { transform: scaleX(1); } 50% { transform: scaleX(1.12); } }
+      @keyframes pet-walk-paw { 0%,100% { transform: translateX(0); } 50% { transform: translateX(3px); } }
       .pet-bob { animation: pet-bob 2.4s ease-in-out infinite; transform-origin: 64px 96px; }
       .pet-blink-l { animation: pet-blink 4.5s ease-in-out infinite; }
       .pet-blink-r { animation: pet-blink 4.5s ease-in-out infinite; }
@@ -177,6 +178,8 @@ function PetStyles() {
       .pet-tongue-pulse { animation: pet-tongue-pulse 0.7s ease-in-out infinite; }
       .pet-pouch-pulse-l { animation: pet-pouch-pulse 1.4s ease-in-out infinite; }
       .pet-pouch-pulse-r { animation: pet-pouch-pulse 1.4s ease-in-out infinite 0.3s; }
+      .pet-walk-paw-a { animation: pet-walk-paw 0.4s ease-in-out infinite; }
+      .pet-walk-paw-b { animation: pet-walk-paw 0.4s ease-in-out infinite 0.2s; }
     `}</style>
   )
 }
@@ -189,10 +192,6 @@ const CAT = {
   base: [
     { type: "ellipse", cx: 66, cy: 68, rx: 26, ry: 15, fill: "#F4A460" }, // body
     { type: "ellipse", cx: 66, cy: 73, rx: 17, ry: 10, fill: "#FFE4B5" }, // belly
-    { type: "ellipse", cx: 45, cy: 84, rx: 6, ry: 5, fill: "#F4A460" },
-    { type: "ellipse", cx: 58, cy: 85, rx: 6, ry: 5, fill: "#F4A460" },
-    { type: "ellipse", cx: 74, cy: 85, rx: 6, ry: 5, fill: "#F4A460" },
-    { type: "ellipse", cx: 87, cy: 84, rx: 6, ry: 5, fill: "#F4A460" },
     { type: "circle", cx: 38, cy: 55, r: 22, fill: "#F4A460" }, // head
     { type: "polygon", points: [[22, 46], [16, 22], [35, 40]], fill: "#F4A460" },
     { type: "polygon", points: [[50, 40], [58, 22], [41, 38]], fill: "#F4A460" },
@@ -206,6 +205,10 @@ const CAT = {
     { type: "circle", cx: 46.5, cy: 50, r: 1.5, fill: "#ffffff" },
     { type: "polygon", points: [[34, 60], [38, 65], [42, 60]], fill: "#FF69B4" }, // nose
   ],
+  pawFL: [{ type: "ellipse", cx: 45, cy: 84, rx: 6, ry: 5, fill: "#F4A460" }],
+  pawFR: [{ type: "ellipse", cx: 58, cy: 85, rx: 6, ry: 5, fill: "#F4A460" }],
+  pawBL: [{ type: "ellipse", cx: 74, cy: 85, rx: 6, ry: 5, fill: "#F4A460" }],
+  pawBR: [{ type: "ellipse", cx: 87, cy: 84, rx: 6, ry: 5, fill: "#F4A460" }],
   tail: [
     { type: "capsule", x1: 94, y1: 66, x2: 106, y2: 48, r: 6, fill: "#F4A460" },
     { type: "circle", cx: 108, cy: 40, r: 6, fill: "#F4A460" },
@@ -220,11 +223,7 @@ const DOG = {
   base: [
     { type: "ellipse", cx: 68, cy: 68, rx: 28, ry: 15, fill: "#DEB887" },
     { type: "ellipse", cx: 68, cy: 73, rx: 19, ry: 10, fill: "#FAEBD7" },
-    { type: "ellipse", cx: 46, cy: 84, rx: 6.5, ry: 5, fill: "#DEB887" },
-    { type: "ellipse", cx: 60, cy: 85, rx: 6.5, ry: 5, fill: "#DEB887" },
-    { type: "ellipse", cx: 76, cy: 85, rx: 6.5, ry: 5, fill: "#DEB887" },
-    { type: "ellipse", cx: 90, cy: 84, rx: 6.5, ry: 5, fill: "#DEB887" },
-    { type: "circle", cx: 38, cy: 54, r: 23, fill: "#DEB887" }, // head — drawn after the ear so it covers the overlap and only the true hanging part of the ear shows
+    { type: "circle", cx: 38, cy: 54, r: 23, fill: "#DEB887" }, // head
     { type: "circle", cx: 38, cy: 58, r: 15, fill: "#F5DEB3" }, // face patch
     { type: "circle", cx: 22, cy: 63, r: 4, fill: "#FFB6C1" },
     { type: "circle", cx: 50, cy: 60, r: 4, fill: "#FFB6C1" },
@@ -235,6 +234,10 @@ const DOG = {
     { type: "circle", cx: 46.5, cy: 48, r: 1.5, fill: "#ffffff" },
     { type: "ellipse", cx: 28, cy: 60, rx: 5, ry: 4, fill: "#2C1810" }, // nose
   ],
+  pawFL: [{ type: "ellipse", cx: 46, cy: 84, rx: 6.5, ry: 5, fill: "#DEB887" }],
+  pawFR: [{ type: "ellipse", cx: 60, cy: 85, rx: 6.5, ry: 5, fill: "#DEB887" }],
+  pawBL: [{ type: "ellipse", cx: 76, cy: 85, rx: 6.5, ry: 5, fill: "#DEB887" }],
+  pawBR: [{ type: "ellipse", cx: 90, cy: 84, rx: 6.5, ry: 5, fill: "#DEB887" }],
   tail: [
     { type: "capsule", x1: 94, y1: 64, x2: 107, y2: 46, r: 6, fill: "#DEB887" },
     { type: "circle", cx: 109, cy: 40, r: 6, fill: "#DEB887" },
@@ -250,10 +253,6 @@ const BUNNY = {
     { type: "circle", cx: 90, cy: 70, r: 7, fill: "#ffffff" }, // tail (static puff)
     { type: "ellipse", cx: 63, cy: 68, rx: 24, ry: 15, fill: "#F5F0E6" },
     { type: "ellipse", cx: 63, cy: 73, rx: 16, ry: 10, fill: "#ffffff" },
-    { type: "ellipse", cx: 44, cy: 84, rx: 6, ry: 4.5, fill: "#F5F0E6" },
-    { type: "ellipse", cx: 57, cy: 85, rx: 6, ry: 4.5, fill: "#F5F0E6" },
-    { type: "ellipse", cx: 70, cy: 85, rx: 6, ry: 4.5, fill: "#F5F0E6" },
-    { type: "ellipse", cx: 83, cy: 84, rx: 6, ry: 4.5, fill: "#F5F0E6" },
     { type: "circle", cx: 36, cy: 56, r: 22, fill: "#F5F0E6" }, // head
     { type: "ellipse", cx: 26, cy: 22, rx: 7, ry: 21, fill: "#F5F0E6" },
     { type: "ellipse", cx: 44, cy: 20, rx: 7, ry: 21, fill: "#F5F0E6" },
@@ -267,6 +266,10 @@ const BUNNY = {
     { type: "circle", cx: 44.5, cy: 49, r: 1.6, fill: "#ffffff" },
     { type: "ellipse", cx: 34, cy: 62, rx: 4, ry: 3, fill: "#FF69B4" },
   ],
+  pawFL: [{ type: "ellipse", cx: 44, cy: 84, rx: 6, ry: 4.5, fill: "#F5F0E6" }],
+  pawFR: [{ type: "ellipse", cx: 57, cy: 85, rx: 6, ry: 4.5, fill: "#F5F0E6" }],
+  pawBL: [{ type: "ellipse", cx: 70, cy: 85, rx: 6, ry: 4.5, fill: "#F5F0E6" }],
+  pawBR: [{ type: "ellipse", cx: 83, cy: 84, rx: 6, ry: 4.5, fill: "#F5F0E6" }],
   earL: [
     { type: "ellipse", cx: 26, cy: 22, rx: 7, ry: 21, fill: "#F5F0E6" },
     { type: "ellipse", cx: 26, cy: 23, rx: 3.6, ry: 15, fill: "#FFB6C1" },
@@ -283,10 +286,6 @@ const HAMSTER = {
   base: [
     { type: "ellipse", cx: 66, cy: 70, rx: 25, ry: 15, fill: "#DEB887" },
     { type: "ellipse", cx: 66, cy: 75, rx: 16, ry: 10, fill: "#FAEBD7" },
-    { type: "ellipse", cx: 46, cy: 86, rx: 6, ry: 4.5, fill: "#DEB887" },
-    { type: "ellipse", cx: 59, cy: 87, rx: 6, ry: 4.5, fill: "#DEB887" },
-    { type: "ellipse", cx: 74, cy: 87, rx: 6, ry: 4.5, fill: "#DEB887" },
-    { type: "ellipse", cx: 88, cy: 86, rx: 6, ry: 4.5, fill: "#DEB887" },
     { type: "circle", cx: 38, cy: 55, r: 22, fill: "#DEB887" }, // head
     { type: "circle", cx: 19, cy: 40, r: 9, fill: "#C4A06A" },
     { type: "circle", cx: 53, cy: 38, r: 9, fill: "#C4A06A" },
@@ -300,6 +299,10 @@ const HAMSTER = {
     { type: "circle", cx: 46.5, cy: 49, r: 1.5, fill: "#ffffff" },
     { type: "ellipse", cx: 36, cy: 62, rx: 4, ry: 3, fill: "#FF69B4" },
   ],
+  pawFL: [{ type: "ellipse", cx: 46, cy: 86, rx: 6, ry: 4.5, fill: "#DEB887" }],
+  pawFR: [{ type: "ellipse", cx: 59, cy: 87, rx: 6, ry: 4.5, fill: "#DEB887" }],
+  pawBL: [{ type: "ellipse", cx: 74, cy: 87, rx: 6, ry: 4.5, fill: "#DEB887" }],
+  pawBR: [{ type: "ellipse", cx: 88, cy: 86, rx: 6, ry: 4.5, fill: "#DEB887" }],
   pouchL: [{ type: "ellipse", cx: 21, cy: 65, rx: 12, ry: 9, fill: "#F5DEB3" }],
   pouchR: [{ type: "ellipse", cx: 53, cy: 63, rx: 12, ry: 9, fill: "#F5DEB3" }],
   eyelidL: [{ type: "ellipse", cx: 30, cy: 53, rx: 5.5, ry: 5.5, fill: "#DEB887" }],
@@ -319,9 +322,9 @@ const BIRD = {
     { type: "circle", cx: 70.5, cy: 32.5, r: 1.4, fill: "#ffffff" },
     { type: "circle", cx: 84.5, cy: 32.5, r: 1.4, fill: "#ffffff" },
     { type: "polygon", points: [[76, 40], [71, 46], [81, 46]], fill: "#FFA500" },
-    { type: "circle", cx: 68, cy: 88, r: 4, fill: "#FFA500" },
-    { type: "circle", cx: 82, cy: 88, r: 4, fill: "#FFA500" },
   ],
+  pawFL: [{ type: "circle", cx: 68, cy: 88, r: 4, fill: "#FFA500" }],
+  pawFR: [{ type: "circle", cx: 82, cy: 88, r: 4, fill: "#FFA500" }],
   tailFeathers: [
     { type: "capsule", x1: 70, y1: 76, x2: 58, y2: 90, r: 3, fill: "#5FA8D3" },
     { type: "capsule", x1: 86, y1: 76, x2: 98, y2: 90, r: 3, fill: "#5FA8D3" },
@@ -340,6 +343,10 @@ function CatPet({ className }) {
     <svg viewBox="0 0 128 128" className={className}>
       <PetStyles />
       <g className="pet-bob">
+        <AnimatedLayer shapes={CAT.pawFL} originX={45} originY={84} animationClass="pet-walk-paw-a" />
+        <AnimatedLayer shapes={CAT.pawBR} originX={87} originY={84} animationClass="pet-walk-paw-a" />
+        <AnimatedLayer shapes={CAT.pawFR} originX={58} originY={85} animationClass="pet-walk-paw-b" />
+        <AnimatedLayer shapes={CAT.pawBL} originX={74} originY={85} animationClass="pet-walk-paw-b" />
         <AnimatedLayer shapes={CAT.tail} originX={94} originY={66} animationClass="pet-tail-wag" />
         <PixelLayer shapes={CAT.base} />
         <AnimatedLayer shapes={CAT.earL} originX={25} originY={40} animationClass="pet-ear-twitch-l" />
@@ -356,6 +363,10 @@ function DogPet({ className }) {
     <svg viewBox="0 0 128 128" className={className}>
       <PetStyles />
       <g className="pet-bob">
+        <AnimatedLayer shapes={DOG.pawFL} originX={46} originY={84} animationClass="pet-walk-paw-a" />
+        <AnimatedLayer shapes={DOG.pawBR} originX={90} originY={84} animationClass="pet-walk-paw-a" />
+        <AnimatedLayer shapes={DOG.pawFR} originX={60} originY={85} animationClass="pet-walk-paw-b" />
+        <AnimatedLayer shapes={DOG.pawBL} originX={76} originY={85} animationClass="pet-walk-paw-b" />
         <AnimatedLayer shapes={DOG.tail} originX={94} originY={64} animationClass="pet-tail-wag-fast" />
         <PixelLayer shapes={DOG.base} />
         <AnimatedLayer shapes={DOG.ear} originX={17} originY={30} animationClass="pet-ear-flop" />
@@ -372,6 +383,10 @@ function BunnyPet({ className }) {
     <svg viewBox="0 0 128 128" className={className}>
       <PetStyles />
       <g className="pet-bob">
+        <AnimatedLayer shapes={BUNNY.pawFL} originX={44} originY={84} animationClass="pet-walk-paw-a" />
+        <AnimatedLayer shapes={BUNNY.pawBR} originX={83} originY={84} animationClass="pet-walk-paw-a" />
+        <AnimatedLayer shapes={BUNNY.pawFR} originX={57} originY={85} animationClass="pet-walk-paw-b" />
+        <AnimatedLayer shapes={BUNNY.pawBL} originX={70} originY={85} animationClass="pet-walk-paw-b" />
         <PixelLayer shapes={BUNNY.base} />
         <AnimatedLayer shapes={BUNNY.earL} originX={26} originY={43} animationClass="pet-ear-twitch-l" />
         <AnimatedLayer shapes={BUNNY.earR} originX={44} originY={41} animationClass="pet-ear-twitch-r" />
@@ -387,6 +402,8 @@ function BirdPet({ className }) {
     <svg viewBox="0 0 128 128" className={className}>
       <PetStyles />
       <g className="pet-bob">
+        <AnimatedLayer shapes={BIRD.pawFL} originX={68} originY={88} animationClass="pet-walk-paw-a" />
+        <AnimatedLayer shapes={BIRD.pawFR} originX={82} originY={88} animationClass="pet-walk-paw-b" />
         <AnimatedLayer shapes={BIRD.tailFeathers} originX={78} originY={80} animationClass="pet-tail-wag" />
         <PixelLayer shapes={BIRD.base} />
         <AnimatedLayer shapes={BIRD.wing} originX={58} originY={50} animationClass="pet-wing-flap" />
@@ -402,6 +419,10 @@ function HamsterPet({ className }) {
     <svg viewBox="0 0 128 128" className={className}>
       <PetStyles />
       <g className="pet-bob">
+        <AnimatedLayer shapes={HAMSTER.pawFL} originX={46} originY={86} animationClass="pet-walk-paw-a" />
+        <AnimatedLayer shapes={HAMSTER.pawBR} originX={88} originY={86} animationClass="pet-walk-paw-a" />
+        <AnimatedLayer shapes={HAMSTER.pawFR} originX={59} originY={87} animationClass="pet-walk-paw-b" />
+        <AnimatedLayer shapes={HAMSTER.pawBL} originX={74} originY={87} animationClass="pet-walk-paw-b" />
         <PixelLayer shapes={HAMSTER.base} />
         <AnimatedLayer shapes={HAMSTER.pouchL} originX={21} originY={65} animationClass="pet-pouch-pulse-l" />
         <AnimatedLayer shapes={HAMSTER.pouchR} originX={53} originY={63} animationClass="pet-pouch-pulse-r" />
