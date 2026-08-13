@@ -1,4 +1,4 @@
-import { ANIMALS } from '../data/animals'
+import { useState, useEffect } from 'react'
 import StatBar from '../components/StatBar'
 import PetAvatar from '../components/PetAvatar'
 
@@ -16,7 +16,34 @@ const STATS = [
   { key: 'cleanliness', label: 'Cleanliness', emoji: '✨', color: 'bg-cyan-500' },
 ]
 
+const ALL_CORNERS = [
+  { x: '0px', y: '60px' },
+  { x: 'calc(100vw - 160px)', y: '60px' },
+  { x: '0px', y: 'calc(100vh - 240px)' },
+  { x: 'calc(100vw - 160px)', y: 'calc(100vh - 240px)' },
+]
+
+const FLOOR_CORNERS = [
+  { x: '0px', y: 'calc(100vh - 240px)' },
+  { x: 'calc(100vw - 160px)', y: 'calc(100vh - 240px)' },
+]
+
 function PetCarePage({ pet, onAction }) {
+  const [corner, setCorner] = useState(0)
+  const isFlying = pet.type === 'bird'
+  const corners = isFlying ? ALL_CORNERS : FLOOR_CORNERS
+
+  useEffect(() => {
+    setCorner(0)
+    const id = setInterval(() => setCorner((c) => (c + 1) % corners.length), 4000)
+    return () => clearInterval(id)
+  }, [corners.length])
+
+  const pos = corners[corner]
+  const flipRight = isFlying
+    ? corner === 1 || corner === 3
+    : corner === 1
+
   return (
     <div className="room-bg min-h-screen w-full flex flex-col relative overflow-hidden">
       {/* Stats - top right */}
@@ -35,14 +62,22 @@ function PetCarePage({ pet, onAction }) {
       </div>
 
       {/* Pet name - top left */}
-      <div className="absolute top-4 left-4 z-20">
+      <div className="absolute top-4 left-0 z-20">
         <h1 className="text-xl font-bold text-gray-800 drop-shadow">{pet.name}</h1>
       </div>
 
-      {/* Pet - center bottom, sitting on floor */}
-      <div className="flex-1 flex items-end justify-center pb-24 relative z-10">
-        <div className="pet-idle">
-          <PetAvatar type={pet.type} className="w-52 h-52 drop-shadow-xl" />
+      {/* Pet - corner to corner movement */}
+      <div
+        className="pet-corner-walk z-10"
+        style={{
+          position: 'absolute',
+          left: pos.x,
+          top: pos.y,
+          transform: flipRight ? 'scaleX(-1)' : 'none',
+        }}
+      >
+        <div className="pet-bob">
+          <PetAvatar type={pet.type} className="w-40 h-40 drop-shadow-lg" />
         </div>
       </div>
 
