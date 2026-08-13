@@ -1,6 +1,7 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
@@ -97,32 +98,17 @@
   background: linear-gradient(180deg, #F5E6D3 0%, #E8D5C0 55%, #D2B48C 55%, #C4A06A 100%);
 }
 
-@keyframes petWalk {
-  0% { transform: translateX(calc(100vw - 160px)); }
-  49.9% { transform: translateX(-160px); }
-  50% { transform: translateX(-160px) scaleX(-1); }
-  99.9% { transform: translateX(calc(100vw - 160px)) scaleX(-1); }
-  100% { transform: translateX(calc(100vw - 160px)); }
+@keyframes petBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
 }
 
-@keyframes petFly {
-  0% { transform: translateX(calc(100vw - 160px)) translateY(0); }
-  25% { transform: translateX(50vw) translateY(-20px); }
-  50% { transform: translateX(-160px) translateY(-5px); }
-  75% { transform: translateX(50vw) translateY(-25px); }
-  100% { transform: translateX(calc(100vw - 160px)) translateY(0); }
+.pet-corner-walk {
+  transition: left 4s ease-in-out, top 4s ease-in-out;
 }
 
-.pet-walk {
-  animation: petWalk 12s linear infinite;
-}
-
-.pet-fly {
-  animation: petFly 12s ease-in-out infinite;
-}
-
-.pet-card:hover {
-  transform: translateY(-4px) scale(1.05);
+.pet-bob {
+  animation: petBob 0.5s ease-in-out infinite;
 }
 
 .pet-card {
@@ -130,5 +116,6 @@
 }
 
 .pet-card:hover {
+  transform: translateY(-4px) scale(1.05);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
 }
