@@ -79,13 +79,21 @@ function App() {
       const data = await res.json()
       setPet(data)
     } catch {
-      setPet((prev) => ({
-        ...prev,
-        hunger: Math.max(0, prev.hunger - 10),
-        happiness: Math.min(100, prev.happiness + 10),
-        energy: Math.min(100, prev.energy + 10),
-        cleanliness: Math.max(0, (prev.cleanliness || 50) - 10),
-      }))
+      setPet((prev) => {
+        if (action === 'feed') {
+          return { ...prev, hunger: Math.max(0, prev.hunger - 15), happiness: Math.min(100, prev.happiness + 5) }
+        }
+        if (action === 'play') {
+          return { ...prev, happiness: Math.min(100, prev.happiness + 15), energy: Math.max(0, prev.energy - 10), hunger: Math.min(100, prev.hunger + 5), cleanliness: Math.max(0, prev.cleanliness - 10) }
+        }
+        if (action === 'sleep') {
+          return { ...prev, energy: Math.min(100, prev.energy + 20), hunger: Math.min(100, prev.hunger + 10) }
+        }
+        if (action === 'bath') {
+          return { ...prev, cleanliness: Math.min(100, prev.cleanliness + 25), happiness: Math.min(100, prev.happiness + 5) }
+        }
+        return prev
+      })
     }
   }
 
