@@ -40,12 +40,12 @@ function App() {
     const id = setInterval(() => {
       setPet((prev) => ({
         ...prev,
-        hunger: Math.max(0, prev.hunger - 1),
-        happiness: Math.max(0, prev.happiness - 2),
+        hunger: Math.min(100, prev.hunger + 2),
+        happiness: Math.max(0, prev.happiness - 3),
         energy: Math.max(0, prev.energy - 1),
-        cleanliness: Math.max(0, prev.cleanliness - 1),
+        cleanliness: Math.max(0, prev.cleanliness - 2),
       }))
-    }, 30000)
+    }, 15000)
     return () => clearInterval(id)
   }, [pet !== null])
 
