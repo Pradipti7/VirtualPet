@@ -62,8 +62,8 @@ function PetCarePage({ pet, onAction }) {
       </div>
 
       {/* Pet name - top left */}
-      <div className="absolute top-4 left-0 z-20">
-        <h1 className="text-xl font-bold text-gray-800 drop-shadow">{pet.name}</h1>
+      <div className="absolute top-4 left-4 z-20">
+        <h1 className="text-xl font-bold text-gray-800 drop-shadow">{pet.name.charAt(0).toUpperCase() + pet.name.slice(1)}</h1>
       </div>
 
       {/* Pet - corner to corner movement */}
