@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import StatBar from '../components/StatBar'
 import PetAvatar from '../components/PetAvatar'
+import PixelBall from '../components/PixelBall'
 
 const ACTIONS = [
   { action: 'feed', label: 'Feed', emoji: '🍖', color: 'bg-orange-500 hover:bg-orange-600' },
@@ -34,15 +35,49 @@ function PetCarePage({ pet, onAction }) {
   const [movingRight, setMovingRight] = useState(false)
   const [showBall, setShowBall] = useState(false)
   const [ballKey, setBallKey] = useState(0)
+  const [ballPos, setBallPos] = useState({ x: 'calc(50vw - 24px)' })
+  const [ballPhase, setBallPhase] = useState('idle') // idle | bounce | roll | rest
+  const [rollDir, setRollDir] = useState('left')
+  const [driftX, setDriftX] = useState(0)
+  const [rollX, setRollX] = useState(0)
+  const [rolling, setRolling] = useState(false)
   const isFlying = pet.type === 'bird'
   const corners = isFlying ? ALL_CORNERS : FLOOR_CORNERS
   const n = corners.length
 
+  const DROP_POSITIONS = [
+    { x: 'calc(15vw - 24px)', vw: 15 },
+    { x: 'calc(50vw - 24px)', vw: 50 },
+    { x: 'calc(85vw - 24px)', vw: 85 },
+  ]
+
   const handlePlay = () => {
     onAction('play')
+    const dropIdx = Math.floor(Math.random() * DROP_POSITIONS.length)
+    const pos = DROP_POSITIONS[dropIdx]
+    const drift = Math.floor(Math.random() * 80) - 40
+    const dir = pos.vw < 50 ? 'right' : 'left'
+    const targetX = dir === 'left'
+      ? -(pos.vw / 100) * window.innerWidth + 24
+      : (100 - pos.vw) / 100 * window.innerWidth - 184
+    setBallPos({ x: pos.x })
+    setDriftX(drift)
+    setRollX(targetX)
     setBallKey((k) => k + 1)
+    setBallPhase('bounce')
     setShowBall(true)
-    setTimeout(() => setShowBall(false), 2000)
+    setRollDir(dir)
+    setRolling(false)
+    setTimeout(() => {
+      setBallPhase('roll')
+      requestAnimationFrame(() => setRolling(true))
+    }, 2200)
+    setTimeout(() => setBallPhase('rest'), 5700)
+    setTimeout(() => {
+      setShowBall(false)
+      setBallPhase('idle')
+      setRolling(false)
+    }, 30000)
   }
 
   useEffect(() => {
@@ -113,10 +148,20 @@ function PetCarePage({ pet, onAction }) {
       {showBall && (
         <div
           key={ballKey}
-          className="ball-drop absolute z-15 pointer-events-none"
-          style={{ left: 'calc(50vw - 20px)', top: '-40px' }}
+          className="absolute pointer-events-none"
+          style={{
+            left: ballPos.x,
+            top: 'calc(100vh - 134px)',
+            zIndex: 15,
+            transform: `translateX(${driftX + (rolling ? rollX : 0)}px)`,
+            transition: rolling ? 'transform 3.5s ease-out' : 'none',
+          }}
         >
-          <span className="text-5xl drop-shadow-lg">⚽</span>
+          <div className={ballPhase === 'roll' || ballPhase === 'rest' ? 'ball-spin' : ''}>
+            <div className={ballPhase === 'bounce' ? 'ball-bounce' : ''}>
+              <PixelBall className="w-12 h-12 drop-shadow-lg" />
+            </div>
+          </div>
         </div>
       )}
 
