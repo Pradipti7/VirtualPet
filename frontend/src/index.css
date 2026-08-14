@@ -119,3 +119,33 @@
   transform: translateY(-4px) scale(1.05);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
 }
+
+@keyframes ballDrop {
+  0% {
+    transform: translateY(-100px) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  60% {
+    transform: translateY(calc(100vh - 320px)) rotate(720deg);
+  }
+  75% {
+    transform: translateY(calc(100vh - 380px)) rotate(810deg);
+  }
+  90% {
+    transform: translateY(calc(100vh - 320px)) rotate(880deg);
+  }
+  95% {
+    transform: translateY(calc(100vh - 340px)) rotate(900deg);
+  }
+  100% {
+    transform: translateY(calc(100vh - 320px)) rotate(900deg);
+    opacity: 1;
+  }
+}
+
+.ball-drop {
+  animation: ballDrop 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}

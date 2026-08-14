@@ -32,9 +32,18 @@ function PetCarePage({ pet, onAction }) {
   const [corner, setCorner] = useState(1)
   const [sitting, setSitting] = useState(false)
   const [movingRight, setMovingRight] = useState(false)
+  const [showBall, setShowBall] = useState(false)
+  const [ballKey, setBallKey] = useState(0)
   const isFlying = pet.type === 'bird'
   const corners = isFlying ? ALL_CORNERS : FLOOR_CORNERS
   const n = corners.length
+
+  const handlePlay = () => {
+    onAction('play')
+    setBallKey((k) => k + 1)
+    setShowBall(true)
+    setTimeout(() => setShowBall(false), 2000)
+  }
 
   useEffect(() => {
     setCorner(1)
@@ -100,13 +109,24 @@ function PetCarePage({ pet, onAction }) {
         </div>
       </div>
 
+      {/* Ball dropping animation */}
+      {showBall && (
+        <div
+          key={ballKey}
+          className="ball-drop absolute z-15 pointer-events-none"
+          style={{ left: 'calc(50vw - 20px)', top: '-40px' }}
+        >
+          <span className="text-5xl drop-shadow-lg">⚽</span>
+        </div>
+      )}
+
       {/* Action buttons - very bottom */}
       <div className="absolute bottom-0 left-0 right-0 pb-4 pt-8 px-4 z-20 bg-gradient-to-t from-amber-700/50 to-transparent">
         <div className="flex justify-center gap-3 max-w-md mx-auto">
           {ACTIONS.map((a) => (
             <button
               key={a.action}
-              onClick={() => onAction(a.action)}
+              onClick={() => a.action === 'play' ? handlePlay() : onAction(a.action)}
               className={`${a.color} text-white font-medium py-2 px-4 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-md flex items-center gap-1.5 text-sm`}
             >
               <span className="text-base">{a.emoji}</span>
