@@ -38,6 +38,7 @@ function PetCarePage({ pet, onAction }) {
   const [ballPos, setBallPos] = useState({ x: 'calc(50vw - 24px)' })
   const [ballPhase, setBallPhase] = useState('idle') // idle | bounce | roll | rest
   const [rollDir, setRollDir] = useState('left')
+  const [bounceDir, setBounceDir] = useState('left')
   const [driftX, setDriftX] = useState(0)
   const [rollX, setRollX] = useState(0)
   const [rolling, setRolling] = useState(false)
@@ -67,12 +68,13 @@ function PetCarePage({ pet, onAction }) {
     setBallPhase('bounce')
     setShowBall(true)
     setRollDir(dir)
+    setBounceDir(Math.random() < 0.5 ? 'left' : 'right')
     setRolling(false)
     setTimeout(() => {
       setBallPhase('roll')
       requestAnimationFrame(() => setRolling(true))
-    }, 2200)
-    setTimeout(() => setBallPhase('rest'), 5700)
+    }, 2600)
+    setTimeout(() => setBallPhase('rest'), 6100)
     setTimeout(() => {
       setShowBall(false)
       setBallPhase('idle')
@@ -158,7 +160,7 @@ function PetCarePage({ pet, onAction }) {
           }}
         >
           <div className={ballPhase === 'roll' || ballPhase === 'rest' ? 'ball-spin' : ''}>
-            <div className={ballPhase === 'bounce' ? 'ball-bounce' : ''}>
+            <div className={ballPhase === 'bounce' ? (bounceDir === 'left' ? 'ball-bounce-left' : 'ball-bounce-right') : ''}>
               <PixelBall className="w-12 h-12 drop-shadow-lg" />
             </div>
           </div>
