@@ -42,6 +42,7 @@ function PetCarePage({ pet, onAction }) {
   const [driftX, setDriftX] = useState(0)
   const [rollX, setRollX] = useState(0)
   const [rolling, setRolling] = useState(false)
+  const [bounceEndX, setBounceEndX] = useState(0)
   const isFlying = pet.type === 'bird'
   const corners = isFlying ? ALL_CORNERS : FLOOR_CORNERS
   const n = corners.length
@@ -70,11 +71,13 @@ function PetCarePage({ pet, onAction }) {
     setRollDir(dir)
     setBounceDir(Math.random() < 0.5 ? 'left' : 'right')
     setRolling(false)
+    setBounceEndX(0)
     setTimeout(() => {
+      setBounceEndX(bounceDir === 'left' ? -135 : 135)
       setBallPhase('roll')
       requestAnimationFrame(() => setRolling(true))
     }, 2600)
-    setTimeout(() => setBallPhase('rest'), 6100)
+    setTimeout(() => setBallPhase('rest'), 7600)
     setTimeout(() => {
       setShowBall(false)
       setBallPhase('idle')
@@ -155,8 +158,8 @@ function PetCarePage({ pet, onAction }) {
             left: ballPos.x,
             top: 'calc(100vh - 134px)',
             zIndex: 15,
-            transform: `translateX(${driftX + (rolling ? rollX : 0)}px)`,
-            transition: rolling ? 'transform 3.5s ease-out' : 'none',
+            transform: `translateX(${driftX + (rolling ? rollX + bounceEndX : bounceEndX)}px)`,
+            transition: rolling ? 'transform 5s ease-out' : 'none',
           }}
         >
           <div className={ballPhase === 'roll' || ballPhase === 'rest' ? 'ball-spin' : ''}>

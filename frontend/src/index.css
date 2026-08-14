@@ -342,5 +342,5 @@
 }
 
 .ball-spin {
-  animation: ballSpin 3.5s ease-out forwards;
+  animation: ballSpin 5s ease-out forwards;
 }
