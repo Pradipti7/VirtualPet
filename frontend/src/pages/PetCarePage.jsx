@@ -160,7 +160,13 @@ function PetCarePage({ pet, onAction }) {
           }}
         >
           <div className={bounceDir === 'left' ? 'ball-bounce-left' : 'ball-bounce-right'}>
-            <PixelBall className="w-12 h-12 drop-shadow-lg" />
+            <div className={
+              (ballPhase === 'roll' || ballPhase === 'rest')
+                ? (rollDir === 'left' ? 'roll-left' : 'roll-right')
+                : ''
+            }>
+              <PixelBall className="w-12 h-12 drop-shadow-lg" />
+            </div>
           </div>
         </div>
       )}
