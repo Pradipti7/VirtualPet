@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import StatBar from '../components/StatBar'
 import PetAvatar from '../components/PetAvatar'
 import PixelBall from '../components/PixelBall'
@@ -46,7 +46,7 @@ function PetCarePage({ pet, onAction }) {
   const [chasing, setChasing] = useState(false)
   const [chaseTarget, setChaseTarget] = useState({ x: '0px', y: 'calc(100vh - 240px)' })
   const [chaseSpeed, setChaseSpeed] = useState(2)
-  const [chasePetX, setChasePetX] = useState(0)
+  const [chaseFaceRight, setChaseFaceRight] = useState(false)
   const [showFood, setShowFood] = useState(false)
   const [foodKey, setFoodKey] = useState(0)
   const [foodPos, setFoodPos] = useState({ x: 'calc(50vw - 24px)' })
@@ -59,7 +59,8 @@ function PetCarePage({ pet, onAction }) {
   const [feeding, setFeeding] = useState(false)
   const [feedChaseTarget, setFeedChaseTarget] = useState({ x: '0px', y: 'calc(100vh - 240px)' })
   const [feedChaseSpeed, setFeedChaseSpeed] = useState(2)
-  const [feedPetX, setFeedPetX] = useState(0)
+  const [feedFaceRight, setFeedFaceRight] = useState(false)
+  const petRef = useRef(null)
   const isFlying = pet.type === 'bird'
   const corners = isFlying ? ALL_CORNERS : FLOOR_CORNERS
   const n = corners.length
@@ -69,6 +70,11 @@ function PetCarePage({ pet, onAction }) {
     { x: 'calc(50vw - 24px)', vw: 50 },
     { x: 'calc(85vw - 24px)', vw: 85 },
   ]
+
+  const getPetX = () => {
+    if (!petRef.current) return window.innerWidth / 2 - 80
+    return petRef.current.getBoundingClientRect().left
+  }
 
   const handlePlay = () => {
     onAction('play')
@@ -92,7 +98,7 @@ function PetCarePage({ pet, onAction }) {
     const petFinalX = dir === 'left'
       ? Math.max(0, Math.min(window.innerWidth - 160, ballFinalX + 100))
       : Math.max(0, Math.min(window.innerWidth - 160, ballFinalX - 100))
-    const petCurrentX = corner === 0 ? 0 : window.innerWidth - 160
+    const y = isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)'
     setBallPos({ x: pos.x })
     setDriftX(drift)
     setRollX(targetX)
@@ -103,21 +109,18 @@ function PetCarePage({ pet, onAction }) {
     setBounceDir(newBounceDir)
     setRolling(false)
     setChasing(true)
-    setChasePetX(petCurrentX)
-    setChaseTarget({
-      x: `${petDropX}px`,
-      y: isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)',
-    })
-    setTimeout(() => { setChasePetX(petBounce1X); setChaseTarget({ x: `${petBounce1X}px`, y: isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)' }) }, 980)
-    setTimeout(() => { setChasePetX(petBounce2X); setChaseTarget({ x: `${petBounce2X}px`, y: isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)' }) }, 1460)
-    setTimeout(() => { setChasePetX(petBounce3X); setChaseTarget({ x: `${petBounce3X}px`, y: isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)' }) }, 1850)
-    setTimeout(() => { setChasePetX(petBounce4X); setChaseTarget({ x: `${petBounce4X}px`, y: isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)' }) }, 2180)
+    setChaseFaceRight(getPetX() < petDropX)
+    setChaseTarget({ x: `${petDropX}px`, y })
+    setTimeout(() => { setChaseFaceRight(getPetX() < petBounce1X); setChaseTarget({ x: `${petBounce1X}px`, y }) }, 980)
+    setTimeout(() => { setChaseFaceRight(getPetX() < petBounce2X); setChaseTarget({ x: `${petBounce2X}px`, y }) }, 1460)
+    setTimeout(() => { setChaseFaceRight(getPetX() < petBounce3X); setChaseTarget({ x: `${petBounce3X}px`, y }) }, 1850)
+    setTimeout(() => { setChaseFaceRight(getPetX() < petBounce4X); setChaseTarget({ x: `${petBounce4X}px`, y }) }, 2180)
     setTimeout(() => {
       setBallPhase('roll')
       setRolling(true)
       setChaseSpeed(5)
-      setChasePetX(petFinalX)
-      setChaseTarget({ x: `${petFinalX}px`, y: isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)' })
+      setChaseFaceRight(getPetX() < petFinalX)
+      setChaseTarget({ x: `${petFinalX}px`, y })
     }, 2800)
     setTimeout(() => setBallPhase('rest'), 7800)
     setTimeout(() => {
@@ -139,7 +142,8 @@ function PetCarePage({ pet, onAction }) {
     const dropPx = (pos.vw / 100) * window.innerWidth - 24
     const foodFinalX = dropPx + drift
     const petDropX = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + (dir === 'left' ? -80 : 80)))
-    const petCurrentX = corner === 0 ? 0 : window.innerWidth - 160
+    const petFinalX = Math.max(0, Math.min(window.innerWidth - 160, foodFinalX))
+    const y = isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)'
     setFoodPos({ x: pos.x })
     setFoodDriftX(drift)
     setFoodRollX(0)
@@ -150,20 +154,14 @@ function PetCarePage({ pet, onAction }) {
     setFoodRolling(false)
     setShowFood(true)
     setFeeding(true)
-    setFeedPetX(petCurrentX)
+    setFeedFaceRight(getPetX() < petDropX)
     setFeedChaseSpeed(1.5)
-    setFeedChaseTarget({
-      x: `${petDropX}px`,
-      y: isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)',
-    })
+    setFeedChaseTarget({ x: `${petDropX}px`, y })
     setTimeout(() => {
       setFoodRolling(true)
       setFeedChaseSpeed(2)
-      setFeedPetX(petDropX)
-      setFeedChaseTarget({
-        x: `${Math.max(0, Math.min(window.innerWidth - 160, foodFinalX))}px`,
-        y: isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)',
-      })
+      setFeedFaceRight(getPetX() < petFinalX)
+      setFeedChaseTarget({ x: `${petFinalX}px`, y })
     }, 1200)
     setTimeout(() => {
       setShowFood(false)
@@ -202,9 +200,9 @@ function PetCarePage({ pet, onAction }) {
         ? { x: 'calc(50vw - 80px)', y: isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)' }
         : corners[corner]
   const flipRight = chasing
-    ? chasePetX < parseInt(chaseTarget.x)
+    ? chaseFaceRight
     : feeding
-      ? feedPetX < parseInt(feedChaseTarget.x)
+      ? feedFaceRight
       : !sitting && movingRight
 
   return (
@@ -231,6 +229,7 @@ function PetCarePage({ pet, onAction }) {
 
       {/* Pet - corner to corner movement */}
       <div
+        ref={petRef}
         className="pet-corner-walk z-10"
         style={{
           position: 'absolute',
