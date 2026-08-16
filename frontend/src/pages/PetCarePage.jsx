@@ -92,16 +92,18 @@ function PetCarePage({ pet, onAction }) {
     const petBounce2X = Math.max(0, Math.min(window.innerWidth - 160, clampedDrop + bSign * 160))
     const petBounce3X = Math.max(0, Math.min(window.innerWidth - 160, clampedDrop + bSign * 202))
     const petBounce4X = Math.max(0, Math.min(window.innerWidth - 160, clampedDrop + bSign * 228))
-    const petFinalX = Math.max(0, Math.min(window.innerWidth - 160, clampedDrop + bSign * 250))
-    const y = isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)'
-    const ballRollDir = dir === 'left' ? -1 : 1
     const rollDist = Math.min(
       dir === 'left' ? clampedDrop + 24 : window.innerWidth - clampedDrop - 184,
       300
     )
+    const ballEndX = dir === 'left' ? clampedDrop - rollDist : clampedDrop + rollDist
+    const petFinalX = Math.max(0, Math.min(window.innerWidth - 160,
+      dir === 'left' ? ballEndX + 100 : ballEndX - 100
+    ))
+    const y = isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)'
     setBallPos({ x: pos.x })
     setDriftX(drift)
-    setRollX(ballRollDir * rollDist)
+    setRollX(dir === 'left' ? -rollDist : rollDist)
     setBallKey((k) => k + 1)
     setBallPhase('bounce')
     setShowBall(true)
