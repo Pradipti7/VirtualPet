@@ -67,12 +67,16 @@ function PetCarePage({ pet, onAction }) {
       : (100 - pos.vw) / 100 * window.innerWidth - 184
     const dropPx = (pos.vw / 100) * window.innerWidth - 24
     const ballFinalX = dropPx + drift + bounceEndX + targetX
-    const petDropX = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift - 100))
-    const petBounce1X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + (dir === 'left' ? -30 : 30) - 100))
-    const petBounce2X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + (dir === 'left' ? -60 : 60) - 100))
-    const petBounce3X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + (dir === 'left' ? -102 : 102) - 100))
-    const petBounce4X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + (dir === 'left' ? -128 : 128) - 100))
-    const petFinalX = Math.max(0, Math.min(window.innerWidth - 160, ballFinalX - 100))
+    const newBounceDir = Math.random() < 0.5 ? 'left' : 'right'
+    const bSign = newBounceDir === 'left' ? -1 : 1
+    const petDropX = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + bSign * 100))
+    const petBounce1X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + bSign * 130))
+    const petBounce2X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + bSign * 160))
+    const petBounce3X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + bSign * 202))
+    const petBounce4X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + bSign * 228))
+    const petFinalX = dir === 'left'
+      ? Math.max(0, Math.min(window.innerWidth - 160, ballFinalX + 100))
+      : Math.max(0, Math.min(window.innerWidth - 160, ballFinalX - 100))
     setBallPos({ x: pos.x })
     setDriftX(drift)
     setRollX(targetX)
@@ -80,7 +84,7 @@ function PetCarePage({ pet, onAction }) {
     setBallPhase('bounce')
     setShowBall(true)
     setRollDir(dir)
-    setBounceDir(Math.random() < 0.5 ? 'left' : 'right')
+    setBounceDir(newBounceDir)
     setRolling(false)
     setChasing(true)
     setChaseTarget({
@@ -110,7 +114,7 @@ function PetCarePage({ pet, onAction }) {
   useEffect(() => {
     setCorner(1)
     setSitting(false)
-    setMovingRight(false)
+    setMovingRight(true)
     let moves = 0
     const id = setInterval(() => {
       moves++
@@ -120,8 +124,7 @@ function PetCarePage({ pet, onAction }) {
       } else {
         setCorner((c) => {
           const next = (c + 1) % n
-          const diff = (next - c + n) % n
-          setMovingRight(n === 2 ? c === 0 : diff === 1)
+          setMovingRight(next % 2 === 1)
           return next
         })
       }
