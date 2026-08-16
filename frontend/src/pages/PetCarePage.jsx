@@ -83,26 +83,25 @@ function PetCarePage({ pet, onAction }) {
     const pos = DROP_POSITIONS[dropIdx]
     const drift = Math.floor(Math.random() * 80) - 40
     const dir = pos.vw < 50 ? 'right' : 'left'
-    const bounceEndX = dir === 'left' ? -135 : 135
-    const targetX = dir === 'left'
-      ? -(pos.vw / 100) * window.innerWidth + 24
-      : (100 - pos.vw) / 100 * window.innerWidth - 184
     const dropPx = (pos.vw / 100) * window.innerWidth - 24
-    const ballFinalX = dropPx + drift + bounceEndX + targetX
     const newBounceDir = Math.random() < 0.5 ? 'left' : 'right'
     const bSign = newBounceDir === 'left' ? -1 : 1
-    const petDropX = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + bSign * 100))
-    const petBounce1X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + bSign * 130))
-    const petBounce2X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + bSign * 160))
-    const petBounce3X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + bSign * 202))
-    const petBounce4X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + bSign * 228))
-    const petFinalX = dir === 'left'
-      ? Math.max(0, Math.min(window.innerWidth - 160, ballFinalX + 100))
-      : Math.max(0, Math.min(window.innerWidth - 160, ballFinalX - 100))
+    const clampedDrop = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift))
+    const petDropX = Math.max(0, Math.min(window.innerWidth - 160, clampedDrop + bSign * 100))
+    const petBounce1X = Math.max(0, Math.min(window.innerWidth - 160, clampedDrop + bSign * 130))
+    const petBounce2X = Math.max(0, Math.min(window.innerWidth - 160, clampedDrop + bSign * 160))
+    const petBounce3X = Math.max(0, Math.min(window.innerWidth - 160, clampedDrop + bSign * 202))
+    const petBounce4X = Math.max(0, Math.min(window.innerWidth - 160, clampedDrop + bSign * 228))
+    const petFinalX = Math.max(0, Math.min(window.innerWidth - 160, clampedDrop + bSign * 250))
     const y = isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)'
+    const ballRollDir = dir === 'left' ? -1 : 1
+    const rollDist = Math.min(
+      dir === 'left' ? clampedDrop + 24 : window.innerWidth - clampedDrop - 184,
+      300
+    )
     setBallPos({ x: pos.x })
     setDriftX(drift)
-    setRollX(targetX)
+    setRollX(ballRollDir * rollDist)
     setBallKey((k) => k + 1)
     setBallPhase('bounce')
     setShowBall(true)
@@ -110,6 +109,7 @@ function PetCarePage({ pet, onAction }) {
     setBounceDir(newBounceDir)
     setRolling(false)
     setChasing(true)
+    setChaseSpeed(2)
     setChaseFaceRight(getPetX() < petDropX)
     setChaseTarget({ x: `${petDropX}px`, y })
     setTimeout(() => { setChaseFaceRight(getPetX() < petBounce1X); setChaseTarget({ x: `${petBounce1X}px`, y }) }, 980)
