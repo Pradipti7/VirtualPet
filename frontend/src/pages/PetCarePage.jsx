@@ -42,7 +42,9 @@ function PetCarePage({ pet, onAction }) {
   const [driftX, setDriftX] = useState(0)
   const [rollX, setRollX] = useState(0)
   const [rolling, setRolling] = useState(false)
-  const [bounceEndX, setBounceEndX] = useState(0)
+  const [chasing, setChasing] = useState(false)
+  const [chaseTarget, setChaseTarget] = useState({ x: '0px', y: 'calc(100vh - 240px)' })
+  const [chaseSpeed, setChaseSpeed] = useState(2)
   const isFlying = pet.type === 'bird'
   const corners = isFlying ? ALL_CORNERS : FLOOR_CORNERS
   const n = corners.length
@@ -59,9 +61,18 @@ function PetCarePage({ pet, onAction }) {
     const pos = DROP_POSITIONS[dropIdx]
     const drift = Math.floor(Math.random() * 80) - 40
     const dir = pos.vw < 50 ? 'right' : 'left'
+    const bounceEndX = dir === 'left' ? -135 : 135
     const targetX = dir === 'left'
       ? -(pos.vw / 100) * window.innerWidth + 24
       : (100 - pos.vw) / 100 * window.innerWidth - 184
+    const dropPx = (pos.vw / 100) * window.innerWidth - 24
+    const ballFinalX = dropPx + drift + bounceEndX + targetX
+    const petDropX = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift - 100))
+    const petBounce1X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + (dir === 'left' ? -30 : 30) - 100))
+    const petBounce2X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + (dir === 'left' ? -60 : 60) - 100))
+    const petBounce3X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + (dir === 'left' ? -102 : 102) - 100))
+    const petBounce4X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + (dir === 'left' ? -128 : 128) - 100))
+    const petFinalX = Math.max(0, Math.min(window.innerWidth - 160, ballFinalX - 100))
     setBallPos({ x: pos.x })
     setDriftX(drift)
     setRollX(targetX)
@@ -71,17 +82,28 @@ function PetCarePage({ pet, onAction }) {
     setRollDir(dir)
     setBounceDir(Math.random() < 0.5 ? 'left' : 'right')
     setRolling(false)
-    setBounceEndX(0)
+    setChasing(true)
+    setChaseTarget({
+      x: `${petDropX}px`,
+      y: isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)',
+    })
+    setTimeout(() => setChaseTarget({ x: `${petBounce1X}px`, y: isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)' }), 980)
+    setTimeout(() => setChaseTarget({ x: `${petBounce2X}px`, y: isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)' }), 1460)
+    setTimeout(() => setChaseTarget({ x: `${petBounce3X}px`, y: isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)' }), 1850)
+    setTimeout(() => setChaseTarget({ x: `${petBounce4X}px`, y: isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)' }), 2180)
     setTimeout(() => {
-      setBounceEndX(bounceDir === 'left' ? -135 : 135)
       setBallPhase('roll')
-      requestAnimationFrame(() => setRolling(true))
-    }, 2600)
-    setTimeout(() => setBallPhase('rest'), 7600)
+      setRolling(true)
+      setChaseSpeed(5)
+      setChaseTarget({ x: `${petFinalX}px`, y: isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)' })
+    }, 2800)
+    setTimeout(() => setBallPhase('rest'), 7800)
     setTimeout(() => {
       setShowBall(false)
       setBallPhase('idle')
       setRolling(false)
+      setChasing(false)
+      setChaseSpeed(2)
     }, 30000)
   }
 
@@ -107,10 +129,14 @@ function PetCarePage({ pet, onAction }) {
     return () => clearInterval(id)
   }, [n])
 
-  const pos = sitting
-    ? { x: 'calc(50vw - 80px)', y: isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)' }
-    : corners[corner]
-  const flipRight = !sitting && movingRight
+  const pos = chasing
+    ? chaseTarget
+    : sitting
+      ? { x: 'calc(50vw - 80px)', y: isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)' }
+      : corners[corner]
+  const flipRight = chasing
+    ? rollDir === 'right'
+    : !sitting && movingRight
 
   return (
     <div className="room-bg min-h-screen w-full flex flex-col relative overflow-hidden">
@@ -142,6 +168,9 @@ function PetCarePage({ pet, onAction }) {
           left: pos.x,
           top: pos.y,
           transform: flipRight ? 'scaleX(-1)' : 'none',
+          transition: chasing
+            ? `left ${chaseSpeed}s ease-in-out, top ${chaseSpeed}s ease-in-out`
+            : 'left 4s ease-in-out, top 4s ease-in-out',
         }}
       >
         <div className={sitting ? '' : 'pet-bob'}>
@@ -158,12 +187,16 @@ function PetCarePage({ pet, onAction }) {
             left: ballPos.x,
             top: 'calc(100vh - 134px)',
             zIndex: 15,
-            transform: `translateX(${driftX + (rolling ? rollX + bounceEndX : bounceEndX)}px)`,
+            transform: `translateX(${driftX + (rolling ? rollX : 0)}px)`,
             transition: rolling ? 'transform 5s ease-out' : 'none',
           }}
         >
-          <div className={ballPhase === 'roll' || ballPhase === 'rest' ? 'ball-spin' : ''}>
-            <div className={ballPhase === 'bounce' ? (bounceDir === 'left' ? 'ball-bounce-left' : 'ball-bounce-right') : ''}>
+          <div className={bounceDir === 'left' ? 'ball-bounce-left' : 'ball-bounce-right'}>
+            <div className={
+              (ballPhase === 'roll' || ballPhase === 'rest')
+                ? (rollDir === 'left' ? 'roll-left' : 'roll-right')
+                : ''
+            }>
               <PixelBall className="w-12 h-12 drop-shadow-lg" />
             </div>
           </div>

@@ -344,3 +344,21 @@
 .ball-spin {
   animation: ballSpin 5s ease-out forwards;
 }
+
+@keyframes rollLeft {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-720deg); }
+}
+
+@keyframes rollRight {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(720deg); }
+}
+
+.roll-left {
+  animation: rollLeft 5s linear forwards;
+}
+
+.roll-right {
+  animation: rollRight 5s linear forwards;
+}
