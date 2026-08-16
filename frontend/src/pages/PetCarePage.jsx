@@ -94,7 +94,7 @@ function PetCarePage({ pet, onAction }) {
     const petBounce4X = Math.max(0, Math.min(window.innerWidth - 160, clampedDrop + bSign * 228))
     const rollDist = Math.min(
       dir === 'left' ? clampedDrop + 24 : window.innerWidth - clampedDrop - 184,
-      300
+      500
     )
     const ballEndX = dir === 'left' ? clampedDrop - rollDist : clampedDrop + rollDist
     const petFinalX = Math.max(0, Math.min(window.innerWidth - 160,
