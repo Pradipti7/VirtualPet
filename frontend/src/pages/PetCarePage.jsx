@@ -114,7 +114,7 @@ function PetCarePage({ pet, onAction }) {
   useEffect(() => {
     setCorner(1)
     setSitting(false)
-    setMovingRight(false)
+    setMovingRight(true)
     let moves = 0
     const id = setInterval(() => {
       moves++
@@ -124,8 +124,7 @@ function PetCarePage({ pet, onAction }) {
       } else {
         setCorner((c) => {
           const next = (c + 1) % n
-          const diff = (next - c + n) % n
-          setMovingRight(n === 2 ? c === 0 : diff === 1)
+          setMovingRight(next % 2 === 1)
           return next
         })
       }
