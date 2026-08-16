@@ -140,12 +140,8 @@ function PetCarePage({ pet, onAction }) {
     const pos = DROP_POSITIONS[dropIdx]
     const drift = Math.floor(Math.random() * 60) - 30
     const dir = pos.vw < 50 ? 'right' : 'left'
-    const bounceEndX = dir === 'left' ? -90 : 90
-    const targetX = dir === 'left'
-      ? -(pos.vw / 100) * window.innerWidth + 24
-      : (100 - pos.vw) / 100 * window.innerWidth - 84
     const dropPx = (pos.vw / 100) * window.innerWidth - 24
-    const foodFinalX = dropPx + drift + bounceEndX + targetX
+    const foodFinalX = dropPx + drift
     const newBounceDir = Math.random() < 0.5 ? 'left' : 'right'
     const bSign = newBounceDir === 'left' ? -1 : 1
     const petDropX = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + bSign * 80))
@@ -153,13 +149,11 @@ function PetCarePage({ pet, onAction }) {
     const petBounce2X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + bSign * 140))
     const petBounce3X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + bSign * 170))
     const petBounce4X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + bSign * 198))
-    const petFinalX = dir === 'left'
-      ? Math.max(0, Math.min(window.innerWidth - 160, foodFinalX + 80))
-      : Math.max(0, Math.min(window.innerWidth - 160, foodFinalX - 80))
+    const petFinalX = Math.max(0, Math.min(window.innerWidth - 160, foodFinalX))
     const y = isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)'
     setFoodPos({ x: pos.x })
     setFoodDriftX(drift)
-    setFoodRollX(targetX)
+    setFoodRollX(0)
     setFoodKey((k) => k + 1)
     setFoodType(randomFood.name)
     setFoodRollDir(dir)
@@ -176,20 +170,18 @@ function PetCarePage({ pet, onAction }) {
     setTimeout(() => { setFeedFaceRight(getPetX() < petBounce3X); setFeedChaseTarget({ x: `${petBounce3X}px`, y }) }, 1850)
     setTimeout(() => { setFeedFaceRight(getPetX() < petBounce4X); setFeedChaseTarget({ x: `${petBounce4X}px`, y }) }, 2180)
     setTimeout(() => {
-      setFoodPhase('roll')
-      setFoodRolling(true)
+      setFoodPhase('rest')
       setFeedChaseSpeed(2)
       setFeedFaceRight(getPetX() < petFinalX)
       setFeedChaseTarget({ x: `${petFinalX}px`, y })
     }, 2800)
-    setTimeout(() => setFoodPhase('rest'), 5800)
     setTimeout(() => {
       setShowFood(false)
       setFoodPhase('idle')
       setFoodRolling(false)
       setFeeding(false)
       setFeedChaseSpeed(2)
-    }, 8000)
+    }, 5500)
   }
 
   useEffect(() => {
@@ -303,18 +295,11 @@ function PetCarePage({ pet, onAction }) {
             left: foodPos.x,
             top: 'calc(100vh - 134px)',
             zIndex: 15,
-            transform: `translateX(${foodDriftX + (foodRolling ? foodRollX : 0)}px)`,
-            transition: foodRolling ? 'transform 3s ease-out' : 'none',
+            transform: `translateX(${foodDriftX}px)`,
           }}
         >
           <div className={foodBounceDir === 'left' ? 'ball-bounce-left' : 'ball-bounce-right'}>
-            <div className={
-              (foodPhase === 'roll' || foodPhase === 'rest')
-                ? (foodRollDir === 'left' ? 'roll-left' : 'roll-right')
-                : ''
-            }>
-              <PixelFood type={foodType} className="w-12 h-12 drop-shadow-lg" />
-            </div>
+            <PixelFood type={foodType} className="w-12 h-12 drop-shadow-lg" />
           </div>
         </div>
       )}
