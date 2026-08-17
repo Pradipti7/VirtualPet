@@ -3,6 +3,7 @@ import StatBar from '../components/StatBar'
 import PetAvatar from '../components/PetAvatar'
 import PixelBall from '../components/PixelBall'
 import PixelFood, { FOOD_TYPES } from '../components/PixelFood'
+import PixelHeart from '../components/PixelHeart'
 
 const ACTIONS = [
   { action: 'feed', label: 'Feed', emoji: '🍖', color: 'bg-orange-500 hover:bg-orange-600' },
@@ -61,6 +62,7 @@ function PetCarePage({ pet, onAction }) {
   const [feedChaseTarget, setFeedChaseTarget] = useState({ x: '0px', y: 'calc(100vh - 240px)' })
   const [feedChaseSpeed, setFeedChaseSpeed] = useState(2)
   const [feedFaceRight, setFeedFaceRight] = useState(false)
+  const [showHeartBubble, setShowHeartBubble] = useState(false)
   const petRef = useRef(null)
   const isFlying = pet.type === 'bird'
   const corners = isFlying ? ALL_CORNERS : FLOOR_CORNERS
@@ -75,6 +77,11 @@ function PetCarePage({ pet, onAction }) {
   const getPetX = () => {
     if (!petRef.current) return window.innerWidth / 2 - 80
     return petRef.current.getBoundingClientRect().left
+  }
+
+  const handlePetClick = () => {
+    setShowHeartBubble(true)
+    setTimeout(() => setShowHeartBubble(false), 1500)
   }
 
   const handlePlay = () => {
@@ -248,7 +255,8 @@ function PetCarePage({ pet, onAction }) {
       {/* Pet - corner to corner movement */}
       <div
         ref={petRef}
-        className="pet-corner-walk z-10"
+        className="pet-corner-walk z-10 cursor-pointer"
+        onClick={handlePetClick}
         style={{
           position: 'absolute',
           left: pos.x,
@@ -264,6 +272,14 @@ function PetCarePage({ pet, onAction }) {
         <div className={sitting ? '' : 'pet-bob'}>
           <PetAvatar type={pet.type} className="w-40 h-40 drop-shadow-lg" />
         </div>
+        {showHeartBubble && (
+          <div className="absolute -top-8 left-1/2 -translate-x-1/2 pet-bubble-pop">
+            <div className="bg-white/90 rounded-lg px-1.5 py-1 shadow-md relative">
+              <PixelHeart className="w-6 h-6" />
+              <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-white/90 rotate-45 rounded-sm" />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Ball dropping animation */}
