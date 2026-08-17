@@ -287,13 +287,14 @@ const BUNNY = {
   pawBL: [{ type: "ellipse", cx: 70, cy: 85, rx: 6, ry: 4.5, fill: "#F5F0E6" }],
   pawBR: [{ type: "ellipse", cx: 83, cy: 84, rx: 6, ry: 4.5, fill: "#F5F0E6" }],
   earL: [
-    { type: "ellipse", cx: 26, cy: 22, rx: 7, ry: 21, fill: "#F5F0E6" },
-    { type: "ellipse", cx: 26, cy: 23, rx: 3.6, ry: 15, fill: "#FFB6C1" },
-  ],
-  earR: [
-    { type: "ellipse", cx: 44, cy: 20, rx: 7, ry: 21, fill: "#F5F0E6" },
-    { type: "ellipse", cx: 44, cy: 21, rx: 3.6, ry: 15, fill: "#FFB6C1" },
-  ],
+  { type: "polygon", points: [[22,30],[14,33],[11,48],[15,62],[21,58],[22,42]], fill: "#8B4513" },
+  { type: "polygon", points: [[21,35],[16,37],[13,48],[16,58],[20,56],[21,44]], fill: "#FFB6C1" },
+],
+// Right ear — narrow, pinned to the side of the head, clear of the eye
+earR: [
+  { type: "polygon", points: [[50,30],[58,33],[61,48],[57,62],[51,58],[50,42]], fill: "#8B4513" },
+  { type: "polygon", points: [[51,35],[56,37],[59,48],[56,58],[52,56],[51,44]], fill: "#FFB6C1" },
+],
   eyelidL: [{ type: "ellipse", cx: 28, cy: 53, rx: 5.5, ry: 5.5, fill: "#F5F0E6" }],
   eyelidR: [{ type: "ellipse", cx: 43, cy: 51, rx: 5.5, ry: 5.5, fill: "#F5F0E6" }],
 }
@@ -385,8 +386,8 @@ function DogPet({ className }) {
         <AnimatedLayer shapes={DOG.pawBL} originX={76} originY={85} animationClass="pet-walk-paw-b" />
         <AnimatedLayer shapes={DOG.tail} originX={94} originY={64} animationClass="pet-tail-wag-fast" />
         <PixelLayer shapes={DOG.base} />
-        <AnimatedLayer shapes={DOG.earR} originX={50} originY={34} animationClass="pet-ear-flop-r" />
-        <AnimatedLayer shapes={DOG.earL} originX={28} originY={36} animationClass="pet-ear-flop-l" />
+       <AnimatedLayer shapes={DOG.earR} originX={55} originY={46} animationClass="pet-ear-flop-r" />
+      <AnimatedLayer shapes={DOG.earL} originX={17} originY={46} animationClass="pet-ear-flop-l" />
         <AnimatedLayer shapes={DOG.tongue} originX={29} originY={68} animationClass="pet-tongue-pulse" />
         <AnimatedLayer shapes={DOG.eyelidL} originX={30} originY={52} animationClass="pet-blink-l" />
         <AnimatedLayer shapes={DOG.eyelidR} originX={45} originY={50} animationClass="pet-blink-r" />

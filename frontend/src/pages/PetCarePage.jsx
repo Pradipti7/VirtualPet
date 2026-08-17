@@ -143,15 +143,16 @@ function PetCarePage({ pet, onAction }) {
     const drift = Math.floor(Math.random() * 60) - 30
     const dir = pos.vw < 50 ? 'right' : 'left'
     const dropPx = (pos.vw / 100) * window.innerWidth - 24
-    const foodFinalX = dropPx + drift
-    const newBounceDir = Math.random() < 0.5 ? 'left' : 'right'
-    const bSign = newBounceDir === 'left' ? -1 : 1
-    const petDropX = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + bSign * 80))
-    const petBounce1X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + bSign * 110))
-    const petBounce2X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + bSign * 140))
-    const petBounce3X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + bSign * 170))
-    const petBounce4X = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift + bSign * 198))
-    const petFinalX = Math.max(0, Math.min(window.innerWidth - 160, foodFinalX))
+    const foodFinalX = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift))
+    const petStartX = getPetX()
+    const goingRight = petStartX < foodFinalX
+    const step = goingRight ? 1 : -1
+    const petDropX = Math.max(0, Math.min(window.innerWidth - 160, petStartX + step * 80))
+    const petBounce1X = Math.max(0, Math.min(window.innerWidth - 160, petStartX + step * 130))
+    const petBounce2X = Math.max(0, Math.min(window.innerWidth - 160, petStartX + step * 170))
+    const petBounce3X = Math.max(0, Math.min(window.innerWidth - 160, petStartX + step * 200))
+    const petBounce4X = Math.max(0, Math.min(window.innerWidth - 160, petStartX + step * 220))
+    const petFinalX = foodFinalX
     const y = isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)'
     setFoodPos({ x: pos.x })
     setFoodDriftX(drift)
@@ -159,13 +160,13 @@ function PetCarePage({ pet, onAction }) {
     setFoodKey((k) => k + 1)
     setFoodType(randomFood.name)
     setFoodRollDir(dir)
-    setFoodBounceDir(newBounceDir)
+    setFoodBounceDir(dir)
     setFoodRolling(false)
     setFoodPhase('bounce')
     setShowFood(true)
     setFeeding(true)
     setFeedChaseSpeed(1.5)
-    setFeedFaceRight(getPetX() < petDropX)
+    setFeedFaceRight(goingRight)
     setFeedChaseTarget({ x: `${petDropX}px`, y })
     setTimeout(() => { setFeedFaceRight(getPetX() < petBounce1X); setFeedChaseTarget({ x: `${petBounce1X}px`, y }) }, 980)
     setTimeout(() => { setFeedFaceRight(getPetX() < petBounce2X); setFeedChaseTarget({ x: `${petBounce2X}px`, y }) }, 1460)
