@@ -219,6 +219,7 @@ const CAT = {
   eyelidR: [{ type: "ellipse", cx: 45, cy: 52, rx: 5.5, ry: 5.5, fill: "#F4A460" }],
 }
 
+
 const DOG = {
   base: [
     { type: "ellipse", cx: 68, cy: 68, rx: 28, ry: 15, fill: "#DEB887" },
@@ -227,12 +228,13 @@ const DOG = {
     { type: "circle", cx: 38, cy: 58, r: 15, fill: "#F5DEB3" }, // face patch
     { type: "circle", cx: 22, cy: 63, r: 4, fill: "#FFB6C1" },
     { type: "circle", cx: 50, cy: 60, r: 4, fill: "#FFB6C1" },
-    { type: "ellipse", cx: 32, cy: 63, rx: 10, ry: 8, fill: "#F5DEB3" }, // snout
+    { type: "ellipse", cx: 30, cy: 65, rx: 11, ry: 9, fill: "#F5DEB3" }, // snout
     { type: "circle", cx: 30, cy: 52, r: 4.5, fill: "#3a2a1a" },
     { type: "circle", cx: 45, cy: 50, r: 4.5, fill: "#3a2a1a" },
     { type: "circle", cx: 31.5, cy: 50, r: 1.5, fill: "#ffffff" },
     { type: "circle", cx: 46.5, cy: 48, r: 1.5, fill: "#ffffff" },
-    { type: "ellipse", cx: 28, cy: 60, rx: 5, ry: 4, fill: "#2C1810" }, // nose
+    { type: "ellipse", cx: 26, cy: 60, rx: 5, ry: 4, fill: "#2C1810" }, // nose
+    { type: "capsule", x1: 22, y1: 66, x2: 34, y2: 67, r: 1.2, fill: "#3a2416" }, // mouth line
   ],
   pawFL: [{ type: "ellipse", cx: 46, cy: 84, rx: 6.5, ry: 5, fill: "#DEB887" }],
   pawFR: [{ type: "ellipse", cx: 60, cy: 85, rx: 6.5, ry: 5, fill: "#DEB887" }],
@@ -242,11 +244,25 @@ const DOG = {
     { type: "capsule", x1: 94, y1: 64, x2: 107, y2: 46, r: 6, fill: "#DEB887" },
     { type: "circle", cx: 109, cy: 40, r: 6, fill: "#DEB887" },
   ],
-  ear: [{ type: "ellipse", cx: 15, cy: 50, rx: 10, ry: 21, fill: "#8B4513" }],
-  tongue: [{ type: "ellipse", cx: 28, cy: 71, rx: 4, ry: 5, fill: "#FF69B4" }],
+  // Front floppy ear — hangs down over the cheek, near the snout
+  earL: [
+    { type: "polygon", points: [[30,34],[16,38],[10,52],[14,68],[24,66],[26,46]], fill: "#8B4513" },
+    { type: "polygon", points: [[28,38],[20,42],[15,52],[18,63],[23,62],[24,46]], fill: "#FFB6C1" },
+  ],
+  // Back floppy ear — smaller, sits toward the back/top of the head
+  earR: [
+    { type: "polygon", points: [[46,32],[56,36],[60,48],[56,60],[48,58],[45,42]], fill: "#8B4513" },
+    { type: "polygon", points: [[47,38],[54,40],[57,48],[54,57],[49,55],[47,44]], fill: "#FFB6C1" },
+  ],
+  // Tongue hanging out, with a slight notch at the tip
+  tongue: [
+    { type: "polygon", points: [[25,67],[33,67],[34,76],[31,82],[29,79],[27,82],[24,76]], fill: "#FF6B81" },
+  ],
   eyelidL: [{ type: "ellipse", cx: 30, cy: 52, rx: 5.5, ry: 5.5, fill: "#F5DEB3" }],
   eyelidR: [{ type: "ellipse", cx: 45, cy: 50, rx: 5.5, ry: 5.5, fill: "#F5DEB3" }],
 }
+
+
 
 const BUNNY = {
   base: [
@@ -369,10 +385,11 @@ function DogPet({ className }) {
         <AnimatedLayer shapes={DOG.pawBL} originX={76} originY={85} animationClass="pet-walk-paw-b" />
         <AnimatedLayer shapes={DOG.tail} originX={94} originY={64} animationClass="pet-tail-wag-fast" />
         <PixelLayer shapes={DOG.base} />
-        <AnimatedLayer shapes={DOG.ear} originX={17} originY={30} animationClass="pet-ear-flop" />
-        <AnimatedLayer shapes={DOG.tongue} originX={27} originY={66} animationClass="pet-tongue-pulse" />
-        <AnimatedLayer shapes={DOG.eyelidL} originX={27} originY={47} animationClass="pet-blink-l" />
-        <AnimatedLayer shapes={DOG.eyelidR} originX={42} originY={45} animationClass="pet-blink-r" />
+        <AnimatedLayer shapes={DOG.earR} originX={50} originY={34} animationClass="pet-ear-flop-r" />
+        <AnimatedLayer shapes={DOG.earL} originX={28} originY={36} animationClass="pet-ear-flop-l" />
+        <AnimatedLayer shapes={DOG.tongue} originX={29} originY={68} animationClass="pet-tongue-pulse" />
+        <AnimatedLayer shapes={DOG.eyelidL} originX={30} originY={52} animationClass="pet-blink-l" />
+        <AnimatedLayer shapes={DOG.eyelidR} originX={45} originY={50} animationClass="pet-blink-r" />
       </g>
     </svg>
   )

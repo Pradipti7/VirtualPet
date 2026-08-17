@@ -176,14 +176,14 @@ function PetCarePage({ pet, onAction }) {
       setFeedChaseSpeed(2)
       setFeedFaceRight(getPetX() < petFinalX)
       setFeedChaseTarget({ x: `${petFinalX}px`, y })
+      setTimeout(() => {
+        setShowFood(false)
+        setFoodPhase('idle')
+        setFoodRolling(false)
+        setFeeding(false)
+        setFeedChaseSpeed(2)
+      }, 2200)
     }, 2800)
-    setTimeout(() => {
-      setShowFood(false)
-      setFoodPhase('idle')
-      setFoodRolling(false)
-      setFeeding(false)
-      setFeedChaseSpeed(2)
-    }, 5500)
   }
 
   useEffect(() => {
