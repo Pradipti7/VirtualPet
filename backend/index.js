@@ -14,6 +14,7 @@ let pet = {
   happiness: 50,
   energy: 50,
   cleanliness: 50,
+  coins: 0,
   adopted: false
 }
 
@@ -30,6 +31,7 @@ app.post('/api/pet/init', (req, res) => {
     happiness: 50,
     energy: 50,
     cleanliness: 50,
+    coins: 0,
     adopted: true
   }
   res.json(pet)
@@ -57,6 +59,13 @@ app.post('/api/pet/sleep', (req, res) => {
 
 app.post('/api/pet/bath', (req, res) => {
   pet.cleanliness = Math.min(100, pet.cleanliness + 25)
+  pet.happiness = Math.min(100, pet.happiness + 5)
+  res.json(pet)
+})
+
+app.post('/api/pet/minigame-reward', (req, res) => {
+  const { coins } = req.body
+  pet.coins = (pet.coins || 0) + (coins || 0)
   pet.happiness = Math.min(100, pet.happiness + 5)
   res.json(pet)
 })

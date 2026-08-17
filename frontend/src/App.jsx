@@ -67,6 +67,7 @@ function App() {
         happiness: 50,
         energy: 50,
         cleanliness: 50,
+        coins: 0,
         adopted: true,
       })
       setPhase('intro')
@@ -83,6 +84,20 @@ function App() {
     }
   }
 
+  const handleMiniGameReward = async (coins) => {
+    try {
+      const res = await fetch('/api/pet/minigame-reward', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ coins }),
+      })
+      const data = await res.json()
+      setPet(data)
+    } catch {
+      setPet((prev) => prev ? { ...prev, coins: (prev.coins || 0) + coins } : prev)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-400 to-pink-500">
@@ -96,7 +111,7 @@ function App() {
   }
 
   if (phase === 'ready' && pet) {
-    return <PetCarePage pet={pet} onAction={updatePet} />
+    return <PetCarePage pet={pet} onAction={updatePet} onMiniGameReward={handleMiniGameReward} />
   }
 
   if (phase === 'landing') {

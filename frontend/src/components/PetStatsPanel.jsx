@@ -20,6 +20,10 @@ export default function PetStatsPanel({ pet }) {
             color={stat.color}
           />
         ))}
+        <div className="flex items-center justify-between text-sm text-gray-600 pt-1 border-t border-gray-200">
+          <span>🪙 Coins</span>
+          <span className="font-bold text-amber-600">{pet.coins || 0}</span>
+        </div>
       </div>
     </div>
   )
