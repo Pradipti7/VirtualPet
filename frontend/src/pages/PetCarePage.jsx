@@ -6,6 +6,7 @@ import PixelEmoji, { EMOJI_TYPES } from '../components/PixelHeart'
 import SkyElements from '../components/SkyElements'
 import PetStatsPanel from '../components/PetStatsPanel'
 import ActionButtons from '../components/ActionButtons'
+import MemoryGame from '../components/MemoryGame'
 import useBallAnimation from '../hooks/useBallAnimation'
 import useFoodAnimation from '../hooks/useFoodAnimation'
 
@@ -36,7 +37,7 @@ const TIME_STYLES = {
   },
 }
 
-function PetCarePage({ pet, onAction }) {
+function PetCarePage({ pet, onAction, onMiniGameReward }) {
   const [corner, setCorner] = useState(1)
   const [sitting, setSitting] = useState(false)
   const [movingRight, setMovingRight] = useState(false)
@@ -44,6 +45,8 @@ function PetCarePage({ pet, onAction }) {
   const [bubbleEmoji, setBubbleEmoji] = useState('heart')
   const [growthLevel, setGrowthLevel] = useState(1)
   const [showGrowthNotif, setShowGrowthNotif] = useState(false)
+  const [showMiniGame, setShowMiniGame] = useState(false)
+  const [miniGameLevel, setMiniGameLevel] = useState(1)
   const [timeOfDay, setTimeOfDay] = useState(() => {
     const hour = new Date().getHours()
     if (hour >= 6 && hour < 12) return 'morning'
@@ -118,6 +121,19 @@ function PetCarePage({ pet, onAction }) {
   }, [])
 
   const petScale = 1 + (growthLevel - 1) * 0.15
+
+  const handleMiniGameComplete = (level) => {
+    onMiniGameReward(5)
+    setMiniGameLevel(level + 1)
+  }
+
+  const handleOpenMiniGame = () => {
+    setShowMiniGame(true)
+  }
+
+  const handleCloseMiniGame = () => {
+    setShowMiniGame(false)
+  }
 
   const pos = ball.chasing
     ? ball.chaseTarget
@@ -228,7 +244,16 @@ function PetCarePage({ pet, onAction }) {
         </div>
       )}
 
-      <ActionButtons onPlay={ball.handlePlay} onFeed={food.handleFeed} onAction={onAction} />
+      <ActionButtons onPlay={ball.handlePlay} onFeed={food.handleFeed} onAction={onAction} onGames={handleOpenMiniGame} />
+
+      {/* Memory Game Overlay */}
+      {showMiniGame && (
+        <MemoryGame
+          level={miniGameLevel}
+          onComplete={handleMiniGameComplete}
+          onClose={handleCloseMiniGame}
+        />
+      )}
     </div>
   )
 }
