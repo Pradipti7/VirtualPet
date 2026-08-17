@@ -64,6 +64,8 @@ function PetCarePage({ pet, onAction }) {
   const [feedFaceRight, setFeedFaceRight] = useState(false)
   const [showHeartBubble, setShowHeartBubble] = useState(false)
   const [bubbleEmoji, setBubbleEmoji] = useState('heart')
+  const [growthLevel, setGrowthLevel] = useState(1)
+  const [showGrowthNotif, setShowGrowthNotif] = useState(false)
   const [timeOfDay, setTimeOfDay] = useState(() => {
     const hour = new Date().getHours()
     if (hour >= 6 && hour < 12) return 'morning'
@@ -219,6 +221,21 @@ function PetCarePage({ pet, onAction }) {
     return () => clearInterval(id)
   }, [])
 
+  useEffect(() => {
+    const id = setInterval(() => {
+      setGrowthLevel((prev) => {
+        if (prev >= 5) return prev
+        const next = prev + 1
+        setShowGrowthNotif(true)
+        setTimeout(() => setShowGrowthNotif(false), 2500)
+        return next
+      })
+    }, 60000)
+    return () => clearInterval(id)
+  }, [])
+
+  const petScale = 1 + (growthLevel - 1) * 0.15
+
   const TIME_STYLES = {
     morning: {
       background: 'linear-gradient(180deg, #87CEEB 0%, #FFF8E1 55%, #D2B48C 55%, #C4A06A 100%)',
@@ -309,7 +326,10 @@ function PetCarePage({ pet, onAction }) {
           position: 'absolute',
           left: pos.x,
           top: pos.y,
-          transform: flipRight ? 'scaleX(-1)' : 'none',
+          transform: flipRight
+            ? `scale(${petScale}) scaleX(-1)`
+            : `scale(${petScale})`,
+          transformOrigin: 'bottom center',
           transition: chasing
             ? `left ${chaseSpeed}s ease-in-out, top ${chaseSpeed}s ease-in-out`
             : feeding
@@ -329,6 +349,16 @@ function PetCarePage({ pet, onAction }) {
           </div>
         )}
       </div>
+
+      {/* Growth notification */}
+      {showGrowthNotif && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-30 pet-bubble-pop">
+          <div className="bg-white/95 backdrop-blur rounded-xl px-4 py-2 shadow-lg flex items-center gap-2">
+            <span className="text-2xl">🌟</span>
+            <span className="text-sm font-bold text-gray-800">{pet.name} grew to level {growthLevel}!</span>
+          </div>
+        </div>
+      )}
 
       {/* Ball dropping animation */}
       {showBall && (
