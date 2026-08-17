@@ -38,7 +38,7 @@ function PetCarePage({ pet, onAction }) {
   const [showBall, setShowBall] = useState(false)
   const [ballKey, setBallKey] = useState(0)
   const [ballPos, setBallPos] = useState({ x: 'calc(50vw - 24px)' })
-  const [ballPhase, setBallPhase] = useState('idle') // idle | bounce | roll | rest
+  const [ballPhase, setBallPhase] = useState('idle')
   const [rollDir, setRollDir] = useState('left')
   const [bounceDir, setBounceDir] = useState('left')
   const [driftX, setDriftX] = useState(0)
@@ -64,6 +64,13 @@ function PetCarePage({ pet, onAction }) {
   const [feedFaceRight, setFeedFaceRight] = useState(false)
   const [showHeartBubble, setShowHeartBubble] = useState(false)
   const [bubbleEmoji, setBubbleEmoji] = useState('heart')
+  const [timeOfDay, setTimeOfDay] = useState(() => {
+    const hour = new Date().getHours()
+    if (hour >= 6 && hour < 12) return 'morning'
+    if (hour >= 12 && hour < 18) return 'afternoon'
+    if (hour >= 18 && hour < 21) return 'evening'
+    return 'night'
+  })
   const petRef = useRef(null)
   const isFlying = pet.type === 'bird'
   const corners = isFlying ? ALL_CORNERS : FLOOR_CORNERS
@@ -219,6 +226,38 @@ function PetCarePage({ pet, onAction }) {
     return () => clearInterval(id)
   }, [n])
 
+  useEffect(() => {
+    const updateTime = () => {
+      const hour = new Date().getHours()
+      if (hour >= 6 && hour < 12) setTimeOfDay('morning')
+      else if (hour >= 12 && hour < 18) setTimeOfDay('afternoon')
+      else if (hour >= 18 && hour < 21) setTimeOfDay('evening')
+      else setTimeOfDay('night')
+    }
+    updateTime()
+    const id = setInterval(updateTime, 60000)
+    return () => clearInterval(id)
+  }, [])
+
+  const TIME_STYLES = {
+    morning: {
+      background: 'linear-gradient(180deg, #87CEEB 0%, #FFF8E1 55%, #D2B48C 55%, #C4A06A 100%)',
+      skyColor: '#87CEEB',
+    },
+    afternoon: {
+      background: 'linear-gradient(180deg, #4FC3F7 0%, #B3E5FC 55%, #D2B48C 55%, #C4A06A 100%)',
+      skyColor: '#4FC3F7',
+    },
+    evening: {
+      background: 'linear-gradient(180deg, #FF8A65 0%, #FFCCBC 55%, #D2B48C 55%, #C4A06A 100%)',
+      skyColor: '#FF8A65',
+    },
+    night: {
+      background: 'linear-gradient(180deg, #1A237E 0%, #283593 55%, #3E2723 55%, #4E342E 100%)',
+      skyColor: '#1A237E',
+    },
+  }
+
   const pos = chasing
     ? chaseTarget
     : feeding
@@ -233,7 +272,34 @@ function PetCarePage({ pet, onAction }) {
       : !sitting && movingRight
 
   return (
-    <div className="room-bg min-h-screen w-full flex flex-col relative overflow-hidden">
+    <div className="min-h-screen w-full flex flex-col relative overflow-hidden" style={{ background: TIME_STYLES[timeOfDay].background }}>
+      {/* Sky elements */}
+      {timeOfDay === 'morning' && (
+        <div className="absolute top-8 right-12 w-16 h-16 rounded-full bg-yellow-300 shadow-[0_0_40px_15px_rgba(253,224,71,0.5)] z-0" />
+      )}
+      {timeOfDay === 'afternoon' && (
+        <div className="absolute top-6 right-16 w-14 h-14 rounded-full bg-yellow-400 shadow-[0_0_50px_20px_rgba(255,235,59,0.4)] z-0" />
+      )}
+      {timeOfDay === 'evening' && (
+        <>
+          <div className="absolute top-10 right-20 w-12 h-12 rounded-full bg-orange-400 shadow-[0_0_30px_10px_rgba(255,152,0,0.4)] z-0" />
+          <div className="absolute top-6 left-1/4 w-2 h-2 rounded-full bg-yellow-100 opacity-60 twinkle" />
+          <div className="absolute top-12 left-1/3 w-1.5 h-1.5 rounded-full bg-yellow-100 opacity-50 twinkle" />
+          <div className="absolute top-4 left-2/3 w-2 h-2 rounded-full bg-yellow-100 opacity-40 twinkle" />
+        </>
+      )}
+      {timeOfDay === 'night' && (
+        <>
+          <div className="absolute top-8 right-16 w-10 h-10 rounded-full bg-gray-200 shadow-[0_0_20px_8px_rgba(200,200,255,0.3)] z-0" style={{ clipPath: 'circle(50% at 35% 35%)' }} />
+          <div className="absolute top-6 left-1/4 w-2 h-2 rounded-full bg-white opacity-80 twinkle" />
+          <div className="absolute top-14 left-1/3 w-1.5 h-1.5 rounded-full bg-white opacity-60 twinkle" />
+          <div className="absolute top-4 left-2/3 w-2 h-2 rounded-full bg-white opacity-70 twinkle" />
+          <div className="absolute top-20 left-1/5 w-1 h-1 rounded-full bg-white opacity-50 twinkle" />
+          <div className="absolute top-8 right-1/3 w-1.5 h-1.5 rounded-full bg-white opacity-60 twinkle" />
+          <div className="absolute top-24 right-1/4 w-1 h-1 rounded-full bg-white opacity-40 twinkle" />
+          <div className="absolute top-2 left-1/2 w-1.5 h-1.5 rounded-full bg-white opacity-50 twinkle" />
+        </>
+      )}
       {/* Stats - top right */}
       <div className="absolute top-4 right-4 w-52 bg-white/90 backdrop-blur rounded-2xl shadow-lg p-4 z-20">
         <h2 className="text-xs font-bold text-gray-700 mb-2 text-center">Pet Status</h2>
