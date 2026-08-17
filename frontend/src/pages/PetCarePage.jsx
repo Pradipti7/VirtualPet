@@ -125,14 +125,16 @@ function PetCarePage({ pet, onAction }) {
       setChaseFaceRight(getPetX() < petFinalX)
       setChaseTarget({ x: `${petFinalX}px`, y })
     }, 2800)
-    setTimeout(() => setBallPhase('rest'), 7800)
     setTimeout(() => {
-      setShowBall(false)
-      setBallPhase('idle')
-      setRolling(false)
-      setChasing(false)
-      setChaseSpeed(2)
-    }, 30000)
+      setBallPhase('rest')
+      setTimeout(() => {
+        setShowBall(false)
+        setBallPhase('idle')
+        setRolling(false)
+        setChasing(false)
+        setChaseSpeed(2)
+      }, 2200)
+    }, 7800)
   }
 
   const handleFeed = () => {

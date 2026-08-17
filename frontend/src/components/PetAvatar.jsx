@@ -163,6 +163,8 @@ function PetStyles() {
       @keyframes pet-ear-twitch { 0%,80%,100% { transform: rotate(0deg); } 90% { transform: rotate(-10deg); } }
       @keyframes pet-ear-flop { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(6deg); } }
       @keyframes pet-wing-flap { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(24deg); } }
+      @keyframes pet-tongue-flick { 0%, 65%, 100% { transform: scaleY(0); } 80% { transform: scaleY(1); } }
+      .pet-tongue-flick { animation: pet-tongue-flick 3.5s ease-in-out infinite; }
       @keyframes pet-tongue-pulse { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(1.15); } }
       @keyframes pet-pouch-pulse { 0%,100% { transform: scaleX(1); } 50% { transform: scaleX(1.12); } }
       @keyframes pet-walk-paw { 0%,100% { transform: translateX(0); } 50% { transform: translateX(3px); } }
@@ -173,8 +175,8 @@ function PetStyles() {
       .pet-tail-wag-fast { animation: pet-tail-wag-fast 0.5s ease-in-out infinite; }
       .pet-ear-twitch-l { animation: pet-ear-twitch 3.6s ease-in-out infinite; }
       .pet-ear-twitch-r { animation: pet-ear-twitch 3.6s ease-in-out infinite 0.4s; }
-      .pet-ear-flop { animation: pet-ear-flop 0.5s ease-in-out infinite; }
-      .pet-wing-flap { animation: pet-wing-flap 0.45s ease-in-out infinite; }
+      .pet-ear-flop-l { animation: pet-ear-flop 0.6s ease-in-out infinite; }
+      .pet-ear-flop-r { animation: pet-ear-flop 0.6s ease-in-out infinite 0.3s; }      .pet-wing-flap { animation: pet-wing-flap 0.45s ease-in-out infinite; }
       .pet-tongue-pulse { animation: pet-tongue-pulse 0.7s ease-in-out infinite; }
       .pet-pouch-pulse-l { animation: pet-pouch-pulse 1.4s ease-in-out infinite; }
       .pet-pouch-pulse-r { animation: pet-pouch-pulse 1.4s ease-in-out infinite 0.3s; }
@@ -222,19 +224,19 @@ const CAT = {
 
 const DOG = {
   base: [
-    { type: "ellipse", cx: 68, cy: 68, rx: 28, ry: 15, fill: "#DEB887" },
-    { type: "ellipse", cx: 68, cy: 73, rx: 19, ry: 10, fill: "#FAEBD7" },
+    { type: "ellipse", cx: 68, cy: 68, rx: 28, ry: 15, fill: "#DEB887" }, // body
+    { type: "ellipse", cx: 68, cy: 73, rx: 19, ry: 10, fill: "#FAEBD7" }, // belly
     { type: "circle", cx: 38, cy: 54, r: 23, fill: "#DEB887" }, // head
     { type: "circle", cx: 38, cy: 58, r: 15, fill: "#F5DEB3" }, // face patch
-    { type: "circle", cx: 22, cy: 63, r: 4, fill: "#FFB6C1" },
+    { type: "circle", cx: 22, cy: 63, r: 4, fill: "#FFB6C1" }, // cheek blush
     { type: "circle", cx: 50, cy: 60, r: 4, fill: "#FFB6C1" },
     { type: "ellipse", cx: 30, cy: 65, rx: 11, ry: 9, fill: "#F5DEB3" }, // snout
-    { type: "circle", cx: 30, cy: 52, r: 4.5, fill: "#3a2a1a" },
+    { type: "circle", cx: 30, cy: 52, r: 4.5, fill: "#3a2a1a" }, // eyes
     { type: "circle", cx: 45, cy: 50, r: 4.5, fill: "#3a2a1a" },
-    { type: "circle", cx: 31.5, cy: 50, r: 1.5, fill: "#ffffff" },
+    { type: "circle", cx: 31.5, cy: 50, r: 1.5, fill: "#ffffff" }, // eye highlights
     { type: "circle", cx: 46.5, cy: 48, r: 1.5, fill: "#ffffff" },
     { type: "ellipse", cx: 26, cy: 60, rx: 5, ry: 4, fill: "#2C1810" }, // nose
-    { type: "capsule", x1: 22, y1: 66, x2: 34, y2: 67, r: 1.2, fill: "#3a2416" }, // mouth line
+    { type: "capsule", x1: 22, y1: 68, x2: 34, y2: 69, r: 1, fill: "#3a2416" }, // mouth line
   ],
   pawFL: [{ type: "ellipse", cx: 46, cy: 84, rx: 6.5, ry: 5, fill: "#DEB887" }],
   pawFR: [{ type: "ellipse", cx: 60, cy: 85, rx: 6.5, ry: 5, fill: "#DEB887" }],
@@ -244,25 +246,23 @@ const DOG = {
     { type: "capsule", x1: 94, y1: 64, x2: 107, y2: 46, r: 6, fill: "#DEB887" },
     { type: "circle", cx: 109, cy: 40, r: 6, fill: "#DEB887" },
   ],
-  // Front floppy ear — hangs down over the cheek, near the snout
+  // Left ear — narrow, hugs the side of the head, well clear of the eye (eye ends at x=34.5)
   earL: [
-    { type: "polygon", points: [[30,34],[16,38],[10,52],[14,68],[24,66],[26,46]], fill: "#8B4513" },
-    { type: "polygon", points: [[28,38],[20,42],[15,52],[18,63],[23,62],[24,46]], fill: "#FFB6C1" },
+    { type: "polygon", points: [[24,33],[14,40],[10,55],[13,68],[19,64],[22,50],[23,38]], fill: "#8B4513" },
+    { type: "polygon", points: [[23,37],[16,42],[13,55],[15,66],[19,63],[21,50],[22,40]], fill: "#FFB6C1" },
   ],
-  // Back floppy ear — smaller, sits toward the back/top of the head
+  // Right ear — narrow, hugs the side of the head, well clear of the eye (eye starts at x=40.5)
   earR: [
-    { type: "polygon", points: [[46,32],[56,36],[60,48],[56,60],[48,58],[45,42]], fill: "#8B4513" },
-    { type: "polygon", points: [[47,38],[54,40],[57,48],[54,57],[49,55],[47,44]], fill: "#FFB6C1" },
+    { type: "polygon", points: [[52,33],[62,40],[66,55],[63,68],[57,64],[54,50],[53,38]], fill: "#8B4513" },
+    { type: "polygon", points: [[53,37],[60,42],[63,55],[61,66],[57,63],[55,50],[54,40]], fill: "#FFB6C1" },
   ],
-  // Tongue hanging out, with a slight notch at the tip
-  tongue: [
-    { type: "polygon", points: [[25,67],[33,67],[34,76],[31,82],[29,79],[27,82],[24,76]], fill: "#FF6B81" },
-  ],
+  // Tongue — hangs straight down from the mouth line, below the snout
+ tongue: [
+  { type: "polygon", points: [[25,70],[31,70],[31,75],[25,75]], fill: "#FF6B81" },
+],
   eyelidL: [{ type: "ellipse", cx: 30, cy: 52, rx: 5.5, ry: 5.5, fill: "#F5DEB3" }],
   eyelidR: [{ type: "ellipse", cx: 45, cy: 50, rx: 5.5, ry: 5.5, fill: "#F5DEB3" }],
 }
-
-
 
 const BUNNY = {
   base: [
