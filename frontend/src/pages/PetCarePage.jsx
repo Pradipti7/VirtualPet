@@ -3,7 +3,7 @@ import StatBar from '../components/StatBar'
 import PetAvatar from '../components/PetAvatar'
 import PixelBall from '../components/PixelBall'
 import PixelFood, { FOOD_TYPES } from '../components/PixelFood'
-import PixelHeart from '../components/PixelHeart'
+import PixelEmoji, { EMOJI_TYPES } from '../components/PixelHeart'
 
 const ACTIONS = [
   { action: 'feed', label: 'Feed', emoji: '🍖', color: 'bg-orange-500 hover:bg-orange-600' },
@@ -63,6 +63,7 @@ function PetCarePage({ pet, onAction }) {
   const [feedChaseSpeed, setFeedChaseSpeed] = useState(2)
   const [feedFaceRight, setFeedFaceRight] = useState(false)
   const [showHeartBubble, setShowHeartBubble] = useState(false)
+  const [bubbleEmoji, setBubbleEmoji] = useState('heart')
   const petRef = useRef(null)
   const isFlying = pet.type === 'bird'
   const corners = isFlying ? ALL_CORNERS : FLOOR_CORNERS
@@ -80,6 +81,7 @@ function PetCarePage({ pet, onAction }) {
   }
 
   const handlePetClick = () => {
+    setBubbleEmoji(EMOJI_TYPES[Math.floor(Math.random() * EMOJI_TYPES.length)])
     setShowHeartBubble(true)
     setTimeout(() => setShowHeartBubble(false), 1500)
   }
@@ -275,7 +277,7 @@ function PetCarePage({ pet, onAction }) {
         {showHeartBubble && (
           <div className="absolute -top-8 left-1/2 -translate-x-1/2 pet-bubble-pop">
             <div className="bg-white/90 rounded-lg px-1.5 py-1 shadow-md relative">
-              <PixelHeart className="w-6 h-6" />
+              <PixelEmoji type={bubbleEmoji} className="w-6 h-6" />
               <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-white/90 rotate-45 rounded-sm" />
             </div>
           </div>
