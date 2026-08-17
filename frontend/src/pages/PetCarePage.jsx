@@ -185,7 +185,7 @@ function PetCarePage({ pet, onAction }) {
         setFoodRolling(false)
         setFeeding(false)
         setFeedChaseSpeed(2)
-      }, 2200)
+      }, 2000)
     }, 2800)
   }
 
