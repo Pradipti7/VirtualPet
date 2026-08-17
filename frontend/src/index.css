@@ -124,6 +124,15 @@
   z-index: 30;
 }
 
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+.twinkle {
+  animation: twinkle 2s ease-in-out infinite;
+}
+
 .pet-card {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }

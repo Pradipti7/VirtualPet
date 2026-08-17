@@ -38,7 +38,7 @@ function PetCarePage({ pet, onAction }) {
   const [showBall, setShowBall] = useState(false)
   const [ballKey, setBallKey] = useState(0)
   const [ballPos, setBallPos] = useState({ x: 'calc(50vw - 24px)' })
-  const [ballPhase, setBallPhase] = useState('idle') // idle | bounce | roll | rest
+  const [ballPhase, setBallPhase] = useState('idle')
   const [rollDir, setRollDir] = useState('left')
   const [bounceDir, setBounceDir] = useState('left')
   const [driftX, setDriftX] = useState(0)
@@ -64,6 +64,15 @@ function PetCarePage({ pet, onAction }) {
   const [feedFaceRight, setFeedFaceRight] = useState(false)
   const [showHeartBubble, setShowHeartBubble] = useState(false)
   const [bubbleEmoji, setBubbleEmoji] = useState('heart')
+  const [growthLevel, setGrowthLevel] = useState(1)
+  const [showGrowthNotif, setShowGrowthNotif] = useState(false)
+  const [timeOfDay, setTimeOfDay] = useState(() => {
+    const hour = new Date().getHours()
+    if (hour >= 6 && hour < 12) return 'morning'
+    if (hour >= 12 && hour < 18) return 'afternoon'
+    if (hour >= 18 && hour < 21) return 'evening'
+    return 'night'
+  })
   const petRef = useRef(null)
   const isFlying = pet.type === 'bird'
   const corners = isFlying ? ALL_CORNERS : FLOOR_CORNERS
@@ -155,15 +164,6 @@ function PetCarePage({ pet, onAction }) {
     const dir = pos.vw < 50 ? 'right' : 'left'
     const dropPx = (pos.vw / 100) * window.innerWidth - 24
     const foodFinalX = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift))
-    const petStartX = getPetX()
-    const goingRight = petStartX < foodFinalX
-    const step = goingRight ? 1 : -1
-    const petDropX = Math.max(0, Math.min(window.innerWidth - 160, petStartX + step * 80))
-    const petBounce1X = Math.max(0, Math.min(window.innerWidth - 160, petStartX + step * 130))
-    const petBounce2X = Math.max(0, Math.min(window.innerWidth - 160, petStartX + step * 170))
-    const petBounce3X = Math.max(0, Math.min(window.innerWidth - 160, petStartX + step * 200))
-    const petBounce4X = Math.max(0, Math.min(window.innerWidth - 160, petStartX + step * 220))
-    const petFinalX = foodFinalX
     const y = isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)'
     setFoodPos({ x: pos.x })
     setFoodDriftX(drift)
@@ -177,25 +177,14 @@ function PetCarePage({ pet, onAction }) {
     setShowFood(true)
     setFeeding(true)
     setFeedChaseSpeed(1.5)
-    setFeedFaceRight(goingRight)
-    setFeedChaseTarget({ x: `${petDropX}px`, y })
-    setTimeout(() => { setFeedFaceRight(getPetX() < petBounce1X); setFeedChaseTarget({ x: `${petBounce1X}px`, y }) }, 980)
-    setTimeout(() => { setFeedFaceRight(getPetX() < petBounce2X); setFeedChaseTarget({ x: `${petBounce2X}px`, y }) }, 1460)
-    setTimeout(() => { setFeedFaceRight(getPetX() < petBounce3X); setFeedChaseTarget({ x: `${petBounce3X}px`, y }) }, 1850)
-    setTimeout(() => { setFeedFaceRight(getPetX() < petBounce4X); setFeedChaseTarget({ x: `${petBounce4X}px`, y }) }, 2180)
+    setFeedFaceRight(getPetX() < foodFinalX)
+    setFeedChaseTarget({ x: `${foodFinalX}px`, y })
     setTimeout(() => {
-      setFoodPhase('rest')
-      setFeedChaseSpeed(2)
-      setFeedFaceRight(getPetX() < petFinalX)
-      setFeedChaseTarget({ x: `${petFinalX}px`, y })
-      setTimeout(() => {
-        setShowFood(false)
-        setFoodPhase('idle')
-        setFoodRolling(false)
-        setFeeding(false)
-        setFeedChaseSpeed(2)
-      }, 2000)
-    }, 2800)
+      setShowFood(false)
+      setFoodPhase('idle')
+      setFoodRolling(false)
+      setFeeding(false)
+    }, 1500)
   }
 
   useEffect(() => {
@@ -219,6 +208,53 @@ function PetCarePage({ pet, onAction }) {
     return () => clearInterval(id)
   }, [n])
 
+  useEffect(() => {
+    const updateTime = () => {
+      const hour = new Date().getHours()
+      if (hour >= 6 && hour < 12) setTimeOfDay('morning')
+      else if (hour >= 12 && hour < 18) setTimeOfDay('afternoon')
+      else if (hour >= 18 && hour < 21) setTimeOfDay('evening')
+      else setTimeOfDay('night')
+    }
+    updateTime()
+    const id = setInterval(updateTime, 60000)
+    return () => clearInterval(id)
+  }, [])
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setGrowthLevel((prev) => {
+        if (prev >= 5) return prev
+        const next = prev + 1
+        setShowGrowthNotif(true)
+        setTimeout(() => setShowGrowthNotif(false), 2500)
+        return next
+      })
+    }, 60000)
+    return () => clearInterval(id)
+  }, [])
+
+  const petScale = 1 + (growthLevel - 1) * 0.15
+
+  const TIME_STYLES = {
+    morning: {
+      background: 'linear-gradient(180deg, #87CEEB 0%, #FFF8E1 55%, #D2B48C 55%, #C4A06A 100%)',
+      skyColor: '#87CEEB',
+    },
+    afternoon: {
+      background: 'linear-gradient(180deg, #4FC3F7 0%, #B3E5FC 55%, #D2B48C 55%, #C4A06A 100%)',
+      skyColor: '#4FC3F7',
+    },
+    evening: {
+      background: 'linear-gradient(180deg, #FF8A65 0%, #FFCCBC 55%, #D2B48C 55%, #C4A06A 100%)',
+      skyColor: '#FF8A65',
+    },
+    night: {
+      background: 'linear-gradient(180deg, #1A237E 0%, #283593 55%, #3E2723 55%, #4E342E 100%)',
+      skyColor: '#1A237E',
+    },
+  }
+
   const pos = chasing
     ? chaseTarget
     : feeding
@@ -233,7 +269,34 @@ function PetCarePage({ pet, onAction }) {
       : !sitting && movingRight
 
   return (
-    <div className="room-bg min-h-screen w-full flex flex-col relative overflow-hidden">
+    <div className="min-h-screen w-full flex flex-col relative overflow-hidden" style={{ background: TIME_STYLES[timeOfDay].background }}>
+      {/* Sky elements */}
+      {timeOfDay === 'morning' && (
+        <div className="absolute top-8 right-12 w-16 h-16 rounded-full bg-yellow-300 shadow-[0_0_40px_15px_rgba(253,224,71,0.5)] z-0" />
+      )}
+      {timeOfDay === 'afternoon' && (
+        <div className="absolute top-6 right-16 w-14 h-14 rounded-full bg-yellow-400 shadow-[0_0_50px_20px_rgba(255,235,59,0.4)] z-0" />
+      )}
+      {timeOfDay === 'evening' && (
+        <>
+          <div className="absolute top-10 right-20 w-12 h-12 rounded-full bg-orange-400 shadow-[0_0_30px_10px_rgba(255,152,0,0.4)] z-0" />
+          <div className="absolute top-6 left-1/4 w-2 h-2 rounded-full bg-yellow-100 opacity-60 twinkle" />
+          <div className="absolute top-12 left-1/3 w-1.5 h-1.5 rounded-full bg-yellow-100 opacity-50 twinkle" />
+          <div className="absolute top-4 left-2/3 w-2 h-2 rounded-full bg-yellow-100 opacity-40 twinkle" />
+        </>
+      )}
+      {timeOfDay === 'night' && (
+        <>
+          <div className="absolute top-8 right-16 w-10 h-10 rounded-full bg-gray-200 shadow-[0_0_20px_8px_rgba(200,200,255,0.3)] z-0" style={{ clipPath: 'circle(50% at 35% 35%)' }} />
+          <div className="absolute top-6 left-1/4 w-2 h-2 rounded-full bg-white opacity-80 twinkle" />
+          <div className="absolute top-14 left-1/3 w-1.5 h-1.5 rounded-full bg-white opacity-60 twinkle" />
+          <div className="absolute top-4 left-2/3 w-2 h-2 rounded-full bg-white opacity-70 twinkle" />
+          <div className="absolute top-20 left-1/5 w-1 h-1 rounded-full bg-white opacity-50 twinkle" />
+          <div className="absolute top-8 right-1/3 w-1.5 h-1.5 rounded-full bg-white opacity-60 twinkle" />
+          <div className="absolute top-24 right-1/4 w-1 h-1 rounded-full bg-white opacity-40 twinkle" />
+          <div className="absolute top-2 left-1/2 w-1.5 h-1.5 rounded-full bg-white opacity-50 twinkle" />
+        </>
+      )}
       {/* Stats - top right */}
       <div className="absolute top-4 right-4 w-52 bg-white/90 backdrop-blur rounded-2xl shadow-lg p-4 z-20">
         <h2 className="text-xs font-bold text-gray-700 mb-2 text-center">Pet Status</h2>
@@ -263,7 +326,10 @@ function PetCarePage({ pet, onAction }) {
           position: 'absolute',
           left: pos.x,
           top: pos.y,
-          transform: flipRight ? 'scaleX(-1)' : 'none',
+          transform: flipRight
+            ? `scale(${petScale}) scaleX(-1)`
+            : `scale(${petScale})`,
+          transformOrigin: 'bottom center',
           transition: chasing
             ? `left ${chaseSpeed}s ease-in-out, top ${chaseSpeed}s ease-in-out`
             : feeding
@@ -277,12 +343,22 @@ function PetCarePage({ pet, onAction }) {
         {showHeartBubble && (
           <div className="absolute -top-8 left-1/2 -translate-x-1/2 pet-bubble-pop">
             <div className="bg-white/90 rounded-lg px-1.5 py-1 shadow-md relative">
-              <PixelEmoji type={bubbleEmoji} className="w-6 h-6" />
+              <PixelEmoji type={bubbleEmoji} petType={pet.type} className="w-6 h-6" />
               <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-white/90 rotate-45 rounded-sm" />
             </div>
           </div>
         )}
       </div>
+
+      {/* Growth notification */}
+      {showGrowthNotif && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-30 pet-bubble-pop">
+          <div className="bg-white/95 backdrop-blur rounded-xl px-4 py-2 shadow-lg flex items-center gap-2">
+            <span className="text-2xl">🌟</span>
+            <span className="text-sm font-bold text-gray-800">{pet.name} grew to level {growthLevel}!</span>
+          </div>
+        </div>
+      )}
 
       {/* Ball dropping animation */}
       {showBall && (
