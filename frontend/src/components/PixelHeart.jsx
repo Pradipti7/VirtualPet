@@ -128,6 +128,16 @@ const FOOD_SHAPES = [
   { type: "ellipse", cx: 76, cy: 42, rx: 6, ry: 10, fill: "#A0522D" },
 ]
 
+const CARROT_SHAPES = [
+  { type: "polygon", points: [[64, 100], [50, 40], [78, 40]], fill: "#FF6D00" },
+  { type: "polygon", points: [[64, 100], [54, 44], [74, 44]], fill: "#FF9100" },
+  { type: "circle", cx: 58, cy: 56, r: 3, fill: "#FFF3E0" },
+  { type: "circle", cx: 68, cy: 68, r: 2.5, fill: "#FFF3E0" },
+  { type: "ellipse", cx: 64, cy: 32, rx: 6, ry: 12, fill: "#2E7D32" },
+  { type: "ellipse", cx: 52, cy: 28, rx: 5, ry: 10, fill: "#388E3C" },
+  { type: "ellipse", cx: 76, cy: 28, rx: 5, ry: 10, fill: "#388E3C" },
+]
+
 const BALL_SHAPES = [
   { type: "circle", cx: 64, cy: 64, r: 32, fill: "#FFFFFF" },
   { type: "circle", cx: 64, cy: 38, r: 9, fill: "#2C2C2C" },
@@ -158,9 +168,10 @@ const EMOJI_SHAPES = {
 
 const EMOJI_TYPES = Object.keys(EMOJI_SHAPES)
 
-function PixelEmoji({ type = "heart", className }) {
-  const shapes = EMOJI_SHAPES[type] || HEART_SHAPES
-  const rects = useMemo(() => rasterizeLayer(shapes), [type])
+function PixelEmoji({ type = "heart", petType, className }) {
+  let shapes = EMOJI_SHAPES[type] || HEART_SHAPES
+  if (type === "food" && petType === "bunny") shapes = CARROT_SHAPES
+  const rects = useMemo(() => rasterizeLayer(shapes), [type, petType])
   return (
     <svg viewBox="0 0 128 128" className={className}>
       <g>

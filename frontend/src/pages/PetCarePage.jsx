@@ -277,7 +277,7 @@ function PetCarePage({ pet, onAction }) {
         {showHeartBubble && (
           <div className="absolute -top-8 left-1/2 -translate-x-1/2 pet-bubble-pop">
             <div className="bg-white/90 rounded-lg px-1.5 py-1 shadow-md relative">
-              <PixelEmoji type={bubbleEmoji} className="w-6 h-6" />
+              <PixelEmoji type={bubbleEmoji} petType={pet.type} className="w-6 h-6" />
               <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-white/90 rotate-45 rounded-sm" />
             </div>
           </div>
