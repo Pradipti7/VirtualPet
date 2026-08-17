@@ -1,0 +1,163 @@
+export const CAT = {
+  base: [
+    { type: "ellipse", cx: 66, cy: 68, rx: 26, ry: 15, fill: "#F4A460" },
+    { type: "ellipse", cx: 66, cy: 73, rx: 17, ry: 10, fill: "#FFE4B5" },
+    { type: "circle", cx: 38, cy: 55, r: 22, fill: "#F4A460" },
+    { type: "polygon", points: [[22, 46], [16, 22], [35, 40]], fill: "#F4A460" },
+    { type: "polygon", points: [[50, 40], [58, 22], [41, 38]], fill: "#F4A460" },
+    { type: "polygon", points: [[25, 42], [21, 29], [33, 39]], fill: "#FFB6C1" },
+    { type: "polygon", points: [[47, 39], [53, 28], [40, 37]], fill: "#FFB6C1" },
+    { type: "circle", cx: 22, cy: 63, r: 4, fill: "#FFB6C1" },
+    { type: "circle", cx: 50, cy: 61, r: 4, fill: "#FFB6C1" },
+    { type: "circle", cx: 29, cy: 54, r: 4.5, fill: "#3a2a1a" },
+    { type: "circle", cx: 45, cy: 52, r: 4.5, fill: "#3a2a1a" },
+    { type: "circle", cx: 30.5, cy: 52, r: 1.5, fill: "#ffffff" },
+    { type: "circle", cx: 46.5, cy: 50, r: 1.5, fill: "#ffffff" },
+    { type: "polygon", points: [[34, 60], [38, 65], [42, 60]], fill: "#FF69B4" },
+  ],
+  pawFL: [{ type: "ellipse", cx: 45, cy: 84, rx: 6, ry: 5, fill: "#F4A460" }],
+  pawFR: [{ type: "ellipse", cx: 58, cy: 85, rx: 6, ry: 5, fill: "#F4A460" }],
+  pawBL: [{ type: "ellipse", cx: 74, cy: 85, rx: 6, ry: 5, fill: "#F4A460" }],
+  pawBR: [{ type: "ellipse", cx: 87, cy: 84, rx: 6, ry: 5, fill: "#F4A460" }],
+  tail: [
+    { type: "capsule", x1: 94, y1: 66, x2: 106, y2: 48, r: 6, fill: "#F4A460" },
+    { type: "circle", cx: 108, cy: 40, r: 6, fill: "#F4A460" },
+  ],
+  earL: [
+    { type: "polygon", points: [[22, 46], [16, 22], [35, 40]], fill: "#F4A460" },
+    { type: "polygon", points: [[25, 42], [21, 29], [33, 39]], fill: "#FFB6C1" },
+  ],
+  earR: [
+    { type: "polygon", points: [[50, 40], [58, 22], [41, 38]], fill: "#F4A460" },
+    { type: "polygon", points: [[47, 39], [53, 28], [40, 37]], fill: "#FFB6C1" },
+  ],
+  eyelidL: [{ type: "ellipse", cx: 29, cy: 54, rx: 5.5, ry: 5.5, fill: "#F4A460" }],
+  eyelidR: [{ type: "ellipse", cx: 45, cy: 52, rx: 5.5, ry: 5.5, fill: "#F4A460" }],
+}
+
+export const DOG = {
+  base: [
+    { type: "ellipse", cx: 68, cy: 68, rx: 28, ry: 15, fill: "#DEB887" },
+    { type: "ellipse", cx: 68, cy: 73, rx: 19, ry: 10, fill: "#FAEBD7" },
+    { type: "circle", cx: 38, cy: 54, r: 23, fill: "#DEB887" },
+    { type: "circle", cx: 38, cy: 58, r: 15, fill: "#F5DEB3" },
+    { type: "circle", cx: 22, cy: 63, r: 4, fill: "#FFB6C1" },
+    { type: "circle", cx: 50, cy: 60, r: 4, fill: "#FFB6C1" },
+    { type: "ellipse", cx: 30, cy: 65, rx: 11, ry: 9, fill: "#F5DEB3" },
+    { type: "circle", cx: 30, cy: 52, r: 4.5, fill: "#3a2a1a" },
+    { type: "circle", cx: 45, cy: 50, r: 4.5, fill: "#3a2a1a" },
+    { type: "circle", cx: 31.5, cy: 50, r: 1.5, fill: "#ffffff" },
+    { type: "circle", cx: 46.5, cy: 48, r: 1.5, fill: "#ffffff" },
+    { type: "ellipse", cx: 26, cy: 60, rx: 5, ry: 4, fill: "#2C1810" },
+    { type: "capsule", x1: 22, y1: 68, x2: 34, y2: 69, r: 1, fill: "#3a2416" },
+  ],
+  pawFL: [{ type: "ellipse", cx: 46, cy: 84, rx: 6.5, ry: 5, fill: "#DEB887" }],
+  pawFR: [{ type: "ellipse", cx: 60, cy: 85, rx: 6.5, ry: 5, fill: "#DEB887" }],
+  pawBL: [{ type: "ellipse", cx: 76, cy: 85, rx: 6.5, ry: 5, fill: "#DEB887" }],
+  pawBR: [{ type: "ellipse", cx: 90, cy: 84, rx: 6.5, ry: 5, fill: "#DEB887" }],
+  tail: [
+    { type: "capsule", x1: 94, y1: 64, x2: 107, y2: 46, r: 6, fill: "#DEB887" },
+    { type: "circle", cx: 109, cy: 40, r: 6, fill: "#DEB887" },
+  ],
+  earL: [
+    { type: "polygon", points: [[24,33],[14,40],[10,55],[13,68],[19,64],[22,50],[23,38]], fill: "#8B4513" },
+    { type: "polygon", points: [[23,37],[16,42],[13,55],[15,66],[19,63],[21,50],[22,40]], fill: "#FFB6C1" },
+  ],
+  earR: [
+    { type: "polygon", points: [[52,33],[62,40],[66,55],[63,68],[57,64],[54,50],[53,38]], fill: "#8B4513" },
+    { type: "polygon", points: [[53,37],[60,42],[63,55],[61,66],[57,63],[55,50],[54,40]], fill: "#FFB6C1" },
+  ],
+  tongue: [
+    { type: "polygon", points: [[25,70],[31,70],[31,75],[25,75]], fill: "#FF6B81" },
+  ],
+  eyelidL: [{ type: "ellipse", cx: 30, cy: 52, rx: 5.5, ry: 5.5, fill: "#F5DEB3" }],
+  eyelidR: [{ type: "ellipse", cx: 45, cy: 50, rx: 5.5, ry: 5.5, fill: "#F5DEB3" }],
+}
+
+export const BUNNY = {
+  base: [
+    { type: "circle", cx: 90, cy: 70, r: 7, fill: "#ffffff" },
+    { type: "ellipse", cx: 63, cy: 68, rx: 24, ry: 15, fill: "#F5F0E6" },
+    { type: "ellipse", cx: 63, cy: 73, rx: 16, ry: 10, fill: "#ffffff" },
+    { type: "circle", cx: 36, cy: 56, r: 22, fill: "#F5F0E6" },
+    { type: "ellipse", cx: 26, cy: 22, rx: 7, ry: 21, fill: "#F5F0E6" },
+    { type: "ellipse", cx: 44, cy: 20, rx: 7, ry: 21, fill: "#F5F0E6" },
+    { type: "ellipse", cx: 26, cy: 23, rx: 3.6, ry: 15, fill: "#FFB6C1" },
+    { type: "ellipse", cx: 44, cy: 21, rx: 3.6, ry: 15, fill: "#FFB6C1" },
+    { type: "circle", cx: 20, cy: 62, r: 5, fill: "#FFB6C1" },
+    { type: "circle", cx: 48, cy: 60, r: 5, fill: "#FFB6C1" },
+    { type: "circle", cx: 28, cy: 53, r: 4.5, fill: "#1a1a1a" },
+    { type: "circle", cx: 43, cy: 51, r: 4.5, fill: "#1a1a1a" },
+    { type: "circle", cx: 29.5, cy: 51, r: 1.6, fill: "#ffffff" },
+    { type: "circle", cx: 44.5, cy: 49, r: 1.6, fill: "#ffffff" },
+    { type: "ellipse", cx: 34, cy: 62, rx: 4, ry: 3, fill: "#FF69B4" },
+  ],
+  pawFL: [{ type: "ellipse", cx: 44, cy: 84, rx: 6, ry: 4.5, fill: "#F5F0E6" }],
+  pawFR: [{ type: "ellipse", cx: 57, cy: 85, rx: 6, ry: 4.5, fill: "#F5F0E6" }],
+  pawBL: [{ type: "ellipse", cx: 70, cy: 85, rx: 6, ry: 4.5, fill: "#F5F0E6" }],
+  pawBR: [{ type: "ellipse", cx: 83, cy: 84, rx: 6, ry: 4.5, fill: "#F5F0E6" }],
+  earL: [
+    { type: "polygon", points: [[22,30],[14,33],[11,48],[15,62],[21,58],[22,42]], fill: "#8B4513" },
+    { type: "polygon", points: [[21,35],[16,37],[13,48],[16,58],[20,56],[21,44]], fill: "#FFB6C1" },
+  ],
+  earR: [
+    { type: "polygon", points: [[50,30],[58,33],[61,48],[57,62],[51,58],[50,42]], fill: "#8B4513" },
+    { type: "polygon", points: [[51,35],[56,37],[59,48],[56,58],[52,56],[51,44]], fill: "#FFB6C1" },
+  ],
+  eyelidL: [{ type: "ellipse", cx: 28, cy: 53, rx: 5.5, ry: 5.5, fill: "#F5F0E6" }],
+  eyelidR: [{ type: "ellipse", cx: 43, cy: 51, rx: 5.5, ry: 5.5, fill: "#F5F0E6" }],
+}
+
+export const HAMSTER = {
+  base: [
+    { type: "ellipse", cx: 66, cy: 70, rx: 25, ry: 15, fill: "#DEB887" },
+    { type: "ellipse", cx: 66, cy: 75, rx: 16, ry: 10, fill: "#FAEBD7" },
+    { type: "circle", cx: 38, cy: 55, r: 22, fill: "#DEB887" },
+    { type: "circle", cx: 19, cy: 40, r: 9, fill: "#C4A06A" },
+    { type: "circle", cx: 53, cy: 38, r: 9, fill: "#C4A06A" },
+    { type: "circle", cx: 19, cy: 40, r: 5, fill: "#FFB6C1" },
+    { type: "circle", cx: 53, cy: 38, r: 5, fill: "#FFB6C1" },
+    { type: "circle", cx: 20, cy: 62, r: 4, fill: "#FFB6C1" },
+    { type: "circle", cx: 53, cy: 60, r: 4, fill: "#FFB6C1" },
+    { type: "circle", cx: 30, cy: 53, r: 4.5, fill: "#1a1a1a" },
+    { type: "circle", cx: 45, cy: 51, r: 4.5, fill: "#1a1a1a" },
+    { type: "circle", cx: 31.5, cy: 51, r: 1.5, fill: "#ffffff" },
+    { type: "circle", cx: 46.5, cy: 49, r: 1.5, fill: "#ffffff" },
+    { type: "ellipse", cx: 36, cy: 62, rx: 4, ry: 3, fill: "#FF69B4" },
+  ],
+  pawFL: [{ type: "ellipse", cx: 46, cy: 86, rx: 6, ry: 4.5, fill: "#DEB887" }],
+  pawFR: [{ type: "ellipse", cx: 59, cy: 87, rx: 6, ry: 4.5, fill: "#DEB887" }],
+  pawBL: [{ type: "ellipse", cx: 74, cy: 87, rx: 6, ry: 4.5, fill: "#DEB887" }],
+  pawBR: [{ type: "ellipse", cx: 88, cy: 86, rx: 6, ry: 4.5, fill: "#DEB887" }],
+  pouchL: [{ type: "ellipse", cx: 21, cy: 65, rx: 12, ry: 9, fill: "#F5DEB3" }],
+  pouchR: [{ type: "ellipse", cx: 53, cy: 63, rx: 12, ry: 9, fill: "#F5DEB3" }],
+  eyelidL: [{ type: "ellipse", cx: 30, cy: 53, rx: 5.5, ry: 5.5, fill: "#DEB887" }],
+  eyelidR: [{ type: "ellipse", cx: 45, cy: 51, rx: 5.5, ry: 5.5, fill: "#DEB887" }],
+}
+
+export const BIRD = {
+  base: [
+    { type: "capsule", x1: 78, y1: 80, x2: 78, y2: 96, r: 3, fill: "#87CEEB" },
+    { type: "circle", cx: 76, cy: 64, r: 22, fill: "#87CEEB" },
+    { type: "ellipse", cx: 74, cy: 71, rx: 13, ry: 14, fill: "#E8F4FD" },
+    { type: "circle", cx: 76, cy: 36, r: 17, fill: "#87CEEB" },
+    { type: "circle", cx: 64, cy: 40, r: 3.5, fill: "#FFB6C1" },
+    { type: "circle", cx: 88, cy: 40, r: 3.5, fill: "#FFB6C1" },
+    { type: "circle", cx: 69, cy: 34, r: 4, fill: "#1a1a1a" },
+    { type: "circle", cx: 83, cy: 34, r: 4, fill: "#1a1a1a" },
+    { type: "circle", cx: 70.5, cy: 32.5, r: 1.4, fill: "#ffffff" },
+    { type: "circle", cx: 84.5, cy: 32.5, r: 1.4, fill: "#ffffff" },
+    { type: "polygon", points: [[76, 40], [71, 46], [81, 46]], fill: "#FFA500" },
+  ],
+  pawFL: [{ type: "circle", cx: 68, cy: 88, r: 4, fill: "#FFA500" }],
+  pawFR: [{ type: "circle", cx: 82, cy: 88, r: 4, fill: "#FFA500" }],
+  tailFeathers: [
+    { type: "capsule", x1: 70, y1: 76, x2: 58, y2: 90, r: 3, fill: "#5FA8D3" },
+    { type: "capsule", x1: 86, y1: 76, x2: 98, y2: 90, r: 3, fill: "#5FA8D3" },
+  ],
+  wing: [{ type: "ellipse", cx: 54, cy: 60, rx: 10, ry: 16, fill: "#5FA8D3" }],
+  eyelidL: [{ type: "ellipse", cx: 69, cy: 34, rx: 5, ry: 5, fill: "#87CEEB" }],
+  eyelidR: [{ type: "ellipse", cx: 83, cy: 34, rx: 5, ry: 5, fill: "#87CEEB" }],
+}
+
+export const PET_SHAPES = { cat: CAT, dog: DOG, bunny: BUNNY, hamster: HAMSTER, bird: BIRD }
