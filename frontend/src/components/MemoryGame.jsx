@@ -82,12 +82,18 @@ export default function MemoryGame({ level = 1, onComplete, onClose }) {
     }
   }, [cards, flippedIds, matchedIds, checking])
 
-  const handleNextLevel = () => {
-    onComplete(level)
-  }
-
   const handleRestart = () => {
     setCards(createCards(level))
+    setFlippedIds([])
+    setMatchedIds(new Set())
+    setMoves(0)
+    setGameComplete(false)
+    setChecking(false)
+  }
+
+  const handleNextLevel = () => {
+    onComplete(level)
+    setCards(createCards(level + 1))
     setFlippedIds([])
     setMatchedIds(new Set())
     setMoves(0)
@@ -132,10 +138,10 @@ export default function MemoryGame({ level = 1, onComplete, onClose }) {
                 Next Level →
               </button>
               <button
-                onClick={handleRestart}
+                onClick={onClose}
                 className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors"
               >
-                Restart
+                Close Game
               </button>
             </div>
           </div>
