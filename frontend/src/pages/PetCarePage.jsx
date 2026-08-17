@@ -162,15 +162,6 @@ function PetCarePage({ pet, onAction }) {
     const dir = pos.vw < 50 ? 'right' : 'left'
     const dropPx = (pos.vw / 100) * window.innerWidth - 24
     const foodFinalX = Math.max(0, Math.min(window.innerWidth - 160, dropPx + drift))
-    const petStartX = getPetX()
-    const goingRight = petStartX < foodFinalX
-    const step = goingRight ? 1 : -1
-    const petDropX = Math.max(0, Math.min(window.innerWidth - 160, petStartX + step * 80))
-    const petBounce1X = Math.max(0, Math.min(window.innerWidth - 160, petStartX + step * 130))
-    const petBounce2X = Math.max(0, Math.min(window.innerWidth - 160, petStartX + step * 170))
-    const petBounce3X = Math.max(0, Math.min(window.innerWidth - 160, petStartX + step * 200))
-    const petBounce4X = Math.max(0, Math.min(window.innerWidth - 160, petStartX + step * 220))
-    const petFinalX = foodFinalX
     const y = isFlying ? 'calc(50vh - 80px)' : 'calc(100vh - 240px)'
     setFoodPos({ x: pos.x })
     setFoodDriftX(drift)
@@ -184,25 +175,14 @@ function PetCarePage({ pet, onAction }) {
     setShowFood(true)
     setFeeding(true)
     setFeedChaseSpeed(1.5)
-    setFeedFaceRight(goingRight)
-    setFeedChaseTarget({ x: `${petDropX}px`, y })
-    setTimeout(() => { setFeedFaceRight(getPetX() < petBounce1X); setFeedChaseTarget({ x: `${petBounce1X}px`, y }) }, 980)
-    setTimeout(() => { setFeedFaceRight(getPetX() < petBounce2X); setFeedChaseTarget({ x: `${petBounce2X}px`, y }) }, 1460)
-    setTimeout(() => { setFeedFaceRight(getPetX() < petBounce3X); setFeedChaseTarget({ x: `${petBounce3X}px`, y }) }, 1850)
-    setTimeout(() => { setFeedFaceRight(getPetX() < petBounce4X); setFeedChaseTarget({ x: `${petBounce4X}px`, y }) }, 2180)
+    setFeedFaceRight(getPetX() < foodFinalX)
+    setFeedChaseTarget({ x: `${foodFinalX}px`, y })
     setTimeout(() => {
-      setFoodPhase('rest')
-      setFeedChaseSpeed(2)
-      setFeedFaceRight(getPetX() < petFinalX)
-      setFeedChaseTarget({ x: `${petFinalX}px`, y })
-      setTimeout(() => {
-        setShowFood(false)
-        setFoodPhase('idle')
-        setFoodRolling(false)
-        setFeeding(false)
-        setFeedChaseSpeed(2)
-      }, 2000)
-    }, 2800)
+      setShowFood(false)
+      setFoodPhase('idle')
+      setFoodRolling(false)
+      setFeeding(false)
+    }, 1500)
   }
 
   useEffect(() => {
