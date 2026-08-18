@@ -9,6 +9,7 @@ import ActionButtons from '../components/ActionButtons'
 import MemoryGame from '../components/MemoryGame'
 import Marketplace from '../components/Marketplace'
 import Inventory from '../components/Inventory'
+import DraggableItem from '../components/DraggableItem'
 import useBallAnimation from '../hooks/useBallAnimation'
 import useFoodAnimation from '../hooks/useFoodAnimation'
 import { MARKETPLACE_ITEMS } from '../data/marketplace'
@@ -63,6 +64,8 @@ function PetCarePage({ pet, onAction, onMiniGameReward, onBuyItem, onSellItem, o
   const isFlying = pet.type === 'bird'
   const corners = isFlying ? ALL_CORNERS : FLOOR_CORNERS
   const n = corners.length
+  const ballResetRef = useRef(null)
+  const foodResetRef = useRef(null)
 
   const getPetX = () => {
     if (!petRef.current) return window.innerWidth / 2 - 80
@@ -75,8 +78,13 @@ function PetCarePage({ pet, onAction, onMiniGameReward, onBuyItem, onSellItem, o
     setTimeout(() => setShowHeartBubble(false), 1500)
   }
 
-  const ball = useBallAnimation({ isFlying, onAction, getPetX })
-  const food = useFoodAnimation({ isFlying, onAction, getPetX })
+  const ball = useBallAnimation({ isFlying, onAction, getPetX, onReset: () => foodResetRef.current?.() })
+  const food = useFoodAnimation({ isFlying, onAction, getPetX, onReset: () => ballResetRef.current?.() })
+
+  useEffect(() => {
+    ballResetRef.current = ball.reset
+    foodResetRef.current = food.reset
+  }, [ball.reset, food.reset])
 
   useEffect(() => {
     setCorner(1)
@@ -294,19 +302,13 @@ function PetCarePage({ pet, onAction, onMiniGameReward, onBuyItem, onSellItem, o
         const itemData = MARKETPLACE_ITEMS.find(i => i.id === roomItem.itemId)
         if (!itemData) return null
         return (
-          <div
+          <DraggableItem
             key={`${roomItem.itemId}-${idx}`}
-            className="absolute z-10 pointer-events-none pet-bubble-pop"
-            style={{
-              left: roomItem.x,
-              top: roomItem.y,
-              transform: 'translate(-50%, -50%)',
-            }}
-          >
-            <div className="text-4xl drop-shadow-lg" title={itemData.name}>
-              {itemData.emoji}
-            </div>
-          </div>
+            item={roomItem}
+            itemData={itemData}
+            onMove={(itemId, newPos) => onPlaceItem(itemId, newPos)}
+            onRotate={(itemId, rotation) => onPlaceItem(itemId, { x: roomItem.x, y: roomItem.y, rotation })}
+          />
         )
       })}
     </div>

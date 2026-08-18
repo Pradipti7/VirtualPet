@@ -6,7 +6,7 @@ const DROP_POSITIONS = [
   { x: 'calc(85vw - 24px)', vw: 85 },
 ]
 
-export default function useBallAnimation({ isFlying, onAction, getPetX }) {
+export default function useBallAnimation({ isFlying, onAction, getPetX, onReset }) {
   const [showBall, setShowBall] = useState(false)
   const [ballKey, setBallKey] = useState(0)
   const [ballPos, setBallPos] = useState({ x: 'calc(50vw - 24px)' })
@@ -21,14 +21,26 @@ export default function useBallAnimation({ isFlying, onAction, getPetX }) {
   const [chaseSpeed, setChaseSpeed] = useState(2)
   const [chaseFaceRight, setChaseFaceRight] = useState(false)
   const timeoutsRef = useRef([])
+  const isActiveRef = useRef(false)
 
   const clearTimeouts = useCallback(() => {
     timeoutsRef.current.forEach(clearTimeout)
     timeoutsRef.current = []
   }, [])
 
+  const resetBall = useCallback(() => {
+    setShowBall(false)
+    setBallPhase('idle')
+    setRolling(false)
+    setChasing(false)
+    setChaseSpeed(2)
+    isActiveRef.current = false
+  }, [])
+
   const handlePlay = useCallback(() => {
     clearTimeouts()
+    if (onReset) onReset()
+    isActiveRef.current = true
     onAction('play')
     const dropIdx = Math.floor(Math.random() * DROP_POSITIONS.length)
     const pos = DROP_POSITIONS[dropIdx]
@@ -67,7 +79,10 @@ export default function useBallAnimation({ isFlying, onAction, getPetX }) {
     setChaseTarget({ x: `${petDropX}px`, y })
 
     const t = (fn, ms) => {
-      const id = setTimeout(fn, ms)
+      const id = setTimeout(() => {
+        if (!isActiveRef.current) return
+        fn()
+      }, ms)
       timeoutsRef.current.push(id)
       return id
     }
@@ -86,18 +101,14 @@ export default function useBallAnimation({ isFlying, onAction, getPetX }) {
     t(() => {
       setBallPhase('rest')
       t(() => {
-        setShowBall(false)
-        setBallPhase('idle')
-        setRolling(false)
-        setChasing(false)
-        setChaseSpeed(2)
+        resetBall()
       }, 2200)
     }, 7800)
-  }, [isFlying, onAction, getPetX, clearTimeouts])
+  }, [isFlying, onAction, getPetX, clearTimeouts, resetBall, onReset])
 
   return {
     showBall, ballKey, ballPos, ballPhase, rollDir, bounceDir,
     driftX, rollX, rolling, chasing, chaseTarget, chaseSpeed, chaseFaceRight,
-    handlePlay,
+    handlePlay, reset: resetBall,
   }
 }
