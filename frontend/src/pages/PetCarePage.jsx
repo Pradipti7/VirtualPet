@@ -6,7 +6,9 @@ import PixelEmoji, { EMOJI_TYPES } from '../components/PixelHeart'
 import SkyElements from '../components/SkyElements'
 import PetStatsPanel from '../components/PetStatsPanel'
 import ActionButtons from '../components/ActionButtons'
+import GameSelector from '../components/GameSelector'
 import MemoryGame from '../components/MemoryGame'
+import BlockStacking from '../components/BlockStacking'
 import Marketplace from '../components/Marketplace'
 import Inventory from '../components/Inventory'
 import DraggableItem from '../components/DraggableItem'
@@ -50,7 +52,10 @@ function PetCarePage({ pet, onAction, onMiniGameReward, onBuyItem, onSellItem, o
   const [growthLevel, setGrowthLevel] = useState(1)
   const [showGrowthNotif, setShowGrowthNotif] = useState(false)
   const [showMiniGame, setShowMiniGame] = useState(false)
+  const [showGameSelector, setShowGameSelector] = useState(false)
+  const [selectedGame, setSelectedGame] = useState(null)
   const [miniGameLevel, setMiniGameLevel] = useState(1)
+  const [stackLevel, setStackLevel] = useState(1)
   const [showMarketplace, setShowMarketplace] = useState(false)
   const [showInventory, setShowInventory] = useState(false)
   const [timeOfDay, setTimeOfDay] = useState(() => {
@@ -140,12 +145,24 @@ function PetCarePage({ pet, onAction, onMiniGameReward, onBuyItem, onSellItem, o
     setMiniGameLevel(level + 1)
   }
 
-  const handleOpenMiniGame = () => {
+  const handleStackComplete = (level) => {
+    onMiniGameReward(5)
+    setStackLevel(level + 1)
+  }
+
+  const handleOpenGameSelector = () => {
+    setShowGameSelector(true)
+  }
+
+  const handleSelectGame = (gameId) => {
+    setSelectedGame(gameId)
+    setShowGameSelector(false)
     setShowMiniGame(true)
   }
 
-  const handleCloseMiniGame = () => {
+  const handleCloseGame = () => {
     setShowMiniGame(false)
+    setSelectedGame(null)
   }
 
   const pos = ball.chasing
@@ -261,18 +278,35 @@ function PetCarePage({ pet, onAction, onMiniGameReward, onBuyItem, onSellItem, o
         onPlay={ball.handlePlay}
         onFeed={food.handleFeed}
         onAction={onAction}
-        onGames={handleOpenMiniGame}
+        onGames={handleOpenGameSelector}
         onShop={() => setShowMarketplace(true)}
         onInventory={() => setShowInventory(true)}
       />
 
       {/* Game Selector Overlay */}
+      {/* Game Selector Overlay */}
+      {showGameSelector && (
+        <GameSelector
+          onSelect={handleSelectGame}
+          onClose={() => setShowGameSelector(false)}
+        />
+      )}
+
       {/* Memory Game Overlay */}
-      {showMiniGame && (
+      {showMiniGame && selectedGame === 'memory' && (
         <MemoryGame
           level={miniGameLevel}
           onComplete={handleMiniGameComplete}
-          onClose={handleCloseMiniGame}
+          onClose={handleCloseGame}
+        />
+      )}
+
+      {/* Block Stack Game Overlay */}
+      {showMiniGame && selectedGame === 'stack' && (
+        <BlockStacking
+          level={stackLevel}
+          onComplete={handleStackComplete}
+          onClose={handleCloseGame}
         />
       )}
 
