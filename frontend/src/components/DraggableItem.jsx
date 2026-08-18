@@ -1,11 +1,14 @@
 import { useState, useRef, useEffect } from 'react'
 
-function DraggableItem({ item, itemData, onMove, onRotate }) {
+function DraggableItem({ item, itemData, onMove }) {
   const [isDragging, setIsDragging] = useState(false)
+  const [isRotating, setIsRotating] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [position, setPosition] = useState({ x: item.x, y: item.y })
   const [rotation, setRotation] = useState(item.rotation || 0)
   const dragOffset = useRef({ x: 0, y: 0 })
+  const rotateStartX = useRef(0)
+  const rotateStartAngle = useRef(0)
   const elementRef = useRef(null)
 
   useEffect(() => {
@@ -14,7 +17,6 @@ function DraggableItem({ item, itemData, onMove, onRotate }) {
   }, [item.x, item.y, item.rotation])
 
   const handlePointerDown = (e) => {
-    if (e.target.closest('.rotate-btn')) return
     e.preventDefault()
     e.stopPropagation()
     setIsDragging(true)
@@ -45,18 +47,35 @@ function DraggableItem({ item, itemData, onMove, onRotate }) {
     onMove(item.itemId, { x: position.x, y: position.y, rotation })
   }
 
-  const handleRotate = (e) => {
+  const handleRotateStart = (e) => {
     e.preventDefault()
     e.stopPropagation()
-    const newRotation = (rotation + 45) % 360
-    setRotation(newRotation)
-    onRotate(item.itemId, newRotation)
+    setIsRotating(true)
+    rotateStartX.current = e.clientX
+    rotateStartAngle.current = rotation
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+
+  const handleRotateMove = (e) => {
+    if (!isRotating) return
+    e.preventDefault()
+    e.stopPropagation()
+    const deltaX = e.clientX - rotateStartX.current
+    setRotation(rotateStartAngle.current + deltaX)
+  }
+
+  const handleRotateEnd = (e) => {
+    if (!isRotating) return
+    e.preventDefault()
+    e.stopPropagation()
+    setIsRotating(false)
+    onMove(item.itemId, { x: position.x, y: position.y, rotation })
   }
 
   return (
     <div
       ref={elementRef}
-      className="absolute z-20 select-none touch-none"
+      className="absolute z-30 select-none touch-none"
       style={{
         left: position.x,
         top: position.y,
@@ -75,10 +94,12 @@ function DraggableItem({ item, itemData, onMove, onRotate }) {
       </div>
       {isHovered && !isDragging && (
         <button
-          className="rotate-btn absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center text-xs hover:bg-blue-100 transition-colors"
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={handleRotate}
-          title="Rotate"
+          className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-7 h-7 bg-white rounded-full shadow-md flex items-center justify-center text-sm hover:bg-blue-100 transition-colors z-10 cursor-grab active:cursor-grabbing"
+          onPointerDown={handleRotateStart}
+          onPointerMove={handleRotateMove}
+          onPointerUp={handleRotateEnd}
+          onPointerCancel={handleRotateEnd}
+          title="Drag to rotate"
         >
           🔄
         </button>

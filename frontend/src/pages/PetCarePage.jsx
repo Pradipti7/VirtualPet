@@ -174,7 +174,7 @@ function PetCarePage({ pet, onAction, onMiniGameReward, onBuyItem, onSellItem, o
       {/* Pet - corner to corner movement */}
       <div
         ref={petRef}
-        className="pet-corner-walk z-10 cursor-pointer"
+        className="pet-corner-walk z-40 cursor-pointer"
         onClick={handlePetClick}
         style={{
           position: 'absolute',
