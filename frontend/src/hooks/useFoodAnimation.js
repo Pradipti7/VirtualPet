@@ -7,7 +7,7 @@ const DROP_POSITIONS = [
   { x: 'calc(85vw - 24px)', vw: 85 },
 ]
 
-export default function useFoodAnimation({ isFlying, onAction, getPetX }) {
+export default function useFoodAnimation({ isFlying, onAction, getPetX, onReset }) {
   const [showFood, setShowFood] = useState(false)
   const [foodKey, setFoodKey] = useState(0)
   const [foodPos, setFoodPos] = useState({ x: 'calc(50vw - 24px)' })
@@ -20,14 +20,24 @@ export default function useFoodAnimation({ isFlying, onAction, getPetX }) {
   const [feedChaseSpeed, setFeedChaseSpeed] = useState(2)
   const [feedFaceRight, setFeedFaceRight] = useState(false)
   const timeoutsRef = useRef([])
+  const isActiveRef = useRef(false)
 
   const clearTimeouts = useCallback(() => {
     timeoutsRef.current.forEach(clearTimeout)
     timeoutsRef.current = []
   }, [])
 
+  const resetFood = useCallback(() => {
+    setShowFood(false)
+    setFoodPhase('idle')
+    setFeeding(false)
+    isActiveRef.current = false
+  }, [])
+
   const handleFeed = useCallback(() => {
     clearTimeouts()
+    if (onReset) onReset()
+    isActiveRef.current = true
     onAction('feed')
     const randomFood = FOOD_TYPES[Math.floor(Math.random() * FOOD_TYPES.length)]
     const dropIdx = Math.floor(Math.random() * DROP_POSITIONS.length)
@@ -50,21 +60,22 @@ export default function useFoodAnimation({ isFlying, onAction, getPetX }) {
     setFeedChaseTarget({ x: `${foodFinalX}px`, y })
 
     const t = (fn, ms) => {
-      const id = setTimeout(fn, ms)
+      const id = setTimeout(() => {
+        if (!isActiveRef.current) return
+        fn()
+      }, ms)
       timeoutsRef.current.push(id)
       return id
     }
 
     t(() => {
-      setShowFood(false)
-      setFoodPhase('idle')
-      setFeeding(false)
+      resetFood()
     }, 1500)
-  }, [isFlying, onAction, getPetX, clearTimeouts])
+  }, [isFlying, onAction, getPetX, clearTimeouts, resetFood, onReset])
 
   return {
     showFood, foodKey, foodPos, foodType, foodDriftX, foodBounceDir,
     foodPhase, feeding, feedChaseTarget, feedChaseSpeed, feedFaceRight,
-    handleFeed,
+    handleFeed, reset: resetFood,
   }
 }

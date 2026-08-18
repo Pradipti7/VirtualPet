@@ -63,6 +63,8 @@ function PetCarePage({ pet, onAction, onMiniGameReward, onBuyItem, onSellItem, o
   const isFlying = pet.type === 'bird'
   const corners = isFlying ? ALL_CORNERS : FLOOR_CORNERS
   const n = corners.length
+  const ballResetRef = useRef(null)
+  const foodResetRef = useRef(null)
 
   const getPetX = () => {
     if (!petRef.current) return window.innerWidth / 2 - 80
@@ -75,8 +77,13 @@ function PetCarePage({ pet, onAction, onMiniGameReward, onBuyItem, onSellItem, o
     setTimeout(() => setShowHeartBubble(false), 1500)
   }
 
-  const ball = useBallAnimation({ isFlying, onAction, getPetX })
-  const food = useFoodAnimation({ isFlying, onAction, getPetX })
+  const ball = useBallAnimation({ isFlying, onAction, getPetX, onReset: () => foodResetRef.current?.() })
+  const food = useFoodAnimation({ isFlying, onAction, getPetX, onReset: () => ballResetRef.current?.() })
+
+  useEffect(() => {
+    ballResetRef.current = ball.reset
+    foodResetRef.current = food.reset
+  }, [ball.reset, food.reset])
 
   useEffect(() => {
     setCorner(1)
