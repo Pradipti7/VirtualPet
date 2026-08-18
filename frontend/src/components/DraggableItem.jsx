@@ -60,9 +60,6 @@ function DraggableItem({ item, itemData, onMove }) {
         className={`flex flex-col items-center transition-transform ${isDragging ? 'scale-125' : 'hover:scale-110'}`}
       >
         <div className="text-5xl drop-shadow-lg">{itemData.emoji}</div>
-        <div className="mt-1 px-2 py-0.5 bg-white/80 backdrop-blur rounded-full text-xs font-medium text-gray-700 shadow-sm whitespace-nowrap">
-          {itemData.name}
-        </div>
       </div>
     </div>
   )
