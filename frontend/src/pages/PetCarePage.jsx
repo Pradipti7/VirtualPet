@@ -7,8 +7,11 @@ import SkyElements from '../components/SkyElements'
 import PetStatsPanel from '../components/PetStatsPanel'
 import ActionButtons from '../components/ActionButtons'
 import MemoryGame from '../components/MemoryGame'
+import Marketplace from '../components/Marketplace'
+import Inventory from '../components/Inventory'
 import useBallAnimation from '../hooks/useBallAnimation'
 import useFoodAnimation from '../hooks/useFoodAnimation'
+import { MARKETPLACE_ITEMS } from '../data/marketplace'
 
 const ALL_CORNERS = [
   { x: '0px', y: '60px' },
@@ -37,7 +40,7 @@ const TIME_STYLES = {
   },
 }
 
-function PetCarePage({ pet, onAction, onMiniGameReward }) {
+function PetCarePage({ pet, onAction, onMiniGameReward, onBuyItem, onSellItem, onPlaceItem, onRemoveItem }) {
   const [corner, setCorner] = useState(1)
   const [sitting, setSitting] = useState(false)
   const [movingRight, setMovingRight] = useState(false)
@@ -47,6 +50,8 @@ function PetCarePage({ pet, onAction, onMiniGameReward }) {
   const [showGrowthNotif, setShowGrowthNotif] = useState(false)
   const [showMiniGame, setShowMiniGame] = useState(false)
   const [miniGameLevel, setMiniGameLevel] = useState(1)
+  const [showMarketplace, setShowMarketplace] = useState(false)
+  const [showInventory, setShowInventory] = useState(false)
   const [timeOfDay, setTimeOfDay] = useState(() => {
     const hour = new Date().getHours()
     if (hour >= 6 && hour < 12) return 'morning'
@@ -244,7 +249,14 @@ function PetCarePage({ pet, onAction, onMiniGameReward }) {
         </div>
       )}
 
-      <ActionButtons onPlay={ball.handlePlay} onFeed={food.handleFeed} onAction={onAction} onGames={handleOpenMiniGame} />
+      <ActionButtons
+        onPlay={ball.handlePlay}
+        onFeed={food.handleFeed}
+        onAction={onAction}
+        onGames={handleOpenMiniGame}
+        onShop={() => setShowMarketplace(true)}
+        onInventory={() => setShowInventory(true)}
+      />
 
       {/* Memory Game Overlay */}
       {showMiniGame && (
@@ -254,6 +266,49 @@ function PetCarePage({ pet, onAction, onMiniGameReward }) {
           onClose={handleCloseMiniGame}
         />
       )}
+
+      {/* Marketplace Overlay */}
+      {showMarketplace && (
+        <Marketplace
+          coins={pet.coins || 0}
+          inventory={pet.inventory || []}
+          onBuy={onBuyItem}
+          onClose={() => setShowMarketplace(false)}
+        />
+      )}
+
+      {/* Inventory Overlay */}
+      {showInventory && (
+        <Inventory
+          inventory={pet.inventory || []}
+          roomItems={pet.roomItems || []}
+          onPlace={onPlaceItem}
+          onRemove={onRemoveItem}
+          onSell={onSellItem}
+          onClose={() => setShowInventory(false)}
+        />
+      )}
+
+      {/* Room Items Display */}
+      {(pet.roomItems || []).map((roomItem, idx) => {
+        const itemData = MARKETPLACE_ITEMS.find(i => i.id === roomItem.itemId)
+        if (!itemData) return null
+        return (
+          <div
+            key={`${roomItem.itemId}-${idx}`}
+            className="absolute z-10 pointer-events-none pet-bubble-pop"
+            style={{
+              left: roomItem.x,
+              top: roomItem.y,
+              transform: 'translate(-50%, -50%)',
+            }}
+          >
+            <div className="text-4xl drop-shadow-lg" title={itemData.name}>
+              {itemData.emoji}
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }

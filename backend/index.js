@@ -15,7 +15,9 @@ let pet = {
   energy: 50,
   cleanliness: 50,
   coins: 0,
-  adopted: false
+  adopted: false,
+  inventory: [],
+  roomItems: []
 }
 
 app.get('/api/pet', (req, res) => {
@@ -32,7 +34,9 @@ app.post('/api/pet/init', (req, res) => {
     energy: 50,
     cleanliness: 50,
     coins: 0,
-    adopted: true
+    adopted: true,
+    inventory: [],
+    roomItems: []
   }
   res.json(pet)
 })
@@ -67,6 +71,55 @@ app.post('/api/pet/minigame-reward', (req, res) => {
   const { coins } = req.body
   pet.coins = (pet.coins || 0) + (coins || 0)
   pet.happiness = Math.min(100, pet.happiness + 5)
+  res.json(pet)
+})
+
+app.post('/api/pet/buy-item', (req, res) => {
+  const { itemId, price } = req.body
+  if (!itemId || !price) {
+    return res.status(400).json({ error: 'itemId and price required' })
+  }
+  if ((pet.coins || 0) < price) {
+    return res.status(400).json({ error: 'Not enough coins' })
+  }
+  pet.coins = pet.coins - price
+  pet.inventory = [...(pet.inventory || []), { itemId, placed: false }]
+  res.json(pet)
+})
+
+app.post('/api/pet/sell-item', (req, res) => {
+  const { itemId } = req.body
+  if (!itemId) {
+    return res.status(400).json({ error: 'itemId required' })
+  }
+  const invIndex = pet.inventory.findIndex(i => i.itemId === itemId)
+  if (invIndex === -1) {
+    return res.status(400).json({ error: 'Item not in inventory' })
+  }
+  pet.inventory.splice(invIndex, 1)
+  pet.roomItems = (pet.roomItems || []).filter(i => i.itemId !== itemId)
+  res.json(pet)
+})
+
+app.post('/api/pet/place-item', (req, res) => {
+  const { itemId, position } = req.body
+  if (!itemId || !position) {
+    return res.status(400).json({ error: 'itemId and position required' })
+  }
+  pet.roomItems = [...(pet.roomItems || []).filter(i => i.itemId !== itemId), { itemId, ...position }]
+  const invItem = pet.inventory.find(i => i.itemId === itemId)
+  if (invItem) invItem.placed = true
+  res.json(pet)
+})
+
+app.post('/api/pet/remove-item', (req, res) => {
+  const { itemId } = req.body
+  if (!itemId) {
+    return res.status(400).json({ error: 'itemId required' })
+  }
+  pet.roomItems = (pet.roomItems || []).filter(i => i.itemId !== itemId)
+  const invItem = pet.inventory.find(i => i.itemId === itemId)
+  if (invItem) invItem.placed = false
   res.json(pet)
 })
 

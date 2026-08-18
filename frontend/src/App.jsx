@@ -98,6 +98,99 @@ function App() {
     }
   }
 
+  const handleBuyItem = async (itemId, price) => {
+    try {
+      const res = await fetch('/api/pet/buy-item', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId, price }),
+      })
+      const data = await res.json()
+      setPet(data)
+      return true
+    } catch {
+      setPet((prev) => {
+        if (!prev || prev.coins < price) return prev
+        return {
+          ...prev,
+          coins: prev.coins - price,
+          inventory: [...(prev.inventory || []), { itemId, placed: false }]
+        }
+      })
+      return true
+    }
+  }
+
+  const handleSellItem = async (itemId, price) => {
+    try {
+      const res = await fetch('/api/pet/sell-item', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId }),
+      })
+      const data = await res.json()
+      setPet(data)
+      return true
+    } catch {
+      setPet((prev) => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          coins: prev.coins + price,
+          inventory: (prev.inventory || []).filter(i => i.itemId !== itemId),
+          roomItems: (prev.roomItems || []).filter(i => i.itemId !== itemId)
+        }
+      })
+      return true
+    }
+  }
+
+  const handlePlaceItem = async (itemId, position) => {
+    try {
+      const res = await fetch('/api/pet/place-item', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId, position }),
+      })
+      const data = await res.json()
+      setPet(data)
+      return true
+    } catch {
+      setPet((prev) => {
+        if (!prev) return prev
+        const inventory = prev.inventory.map(i =>
+          i.itemId === itemId ? { ...i, placed: true } : i
+        )
+        const roomItems = [...(prev.roomItems || []).filter(i => i.itemId !== itemId), { itemId, ...position }]
+        return { ...prev, inventory, roomItems }
+      })
+      return true
+    }
+  }
+
+  const handleRemoveItem = async (itemId) => {
+    try {
+      const res = await fetch('/api/pet/remove-item', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId }),
+      })
+      const data = await res.json()
+      setPet(data)
+      return true
+    } catch {
+      setPet((prev) => {
+        if (!prev) return prev
+        const inventory = prev.inventory.map(i =>
+          i.itemId === itemId ? { ...i, placed: false } : i
+        )
+        const roomItems = (prev.roomItems || []).filter(i => i.itemId !== itemId)
+        return { ...prev, inventory, roomItems }
+      })
+      return true
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-400 to-pink-500">
@@ -111,7 +204,7 @@ function App() {
   }
 
   if (phase === 'ready' && pet) {
-    return <PetCarePage pet={pet} onAction={updatePet} onMiniGameReward={handleMiniGameReward} />
+    return <PetCarePage pet={pet} onAction={updatePet} onMiniGameReward={handleMiniGameReward} onBuyItem={handleBuyItem} onSellItem={handleSellItem} onPlaceItem={handlePlaceItem} onRemoveItem={handleRemoveItem} />
   }
 
   if (phase === 'landing') {
