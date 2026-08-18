@@ -174,7 +174,7 @@ function PetCarePage({ pet, onAction, onMiniGameReward, onBuyItem, onSellItem, o
       {/* Pet - corner to corner movement */}
       <div
         ref={petRef}
-        className="pet-corner-walk z-10 cursor-pointer"
+        className="pet-corner-walk z-40 cursor-pointer"
         onClick={handlePetClick}
         style={{
           position: 'absolute',
@@ -266,6 +266,7 @@ function PetCarePage({ pet, onAction, onMiniGameReward, onBuyItem, onSellItem, o
         onInventory={() => setShowInventory(true)}
       />
 
+      {/* Game Selector Overlay */}
       {/* Memory Game Overlay */}
       {showMiniGame && (
         <MemoryGame
@@ -307,7 +308,6 @@ function PetCarePage({ pet, onAction, onMiniGameReward, onBuyItem, onSellItem, o
             item={roomItem}
             itemData={itemData}
             onMove={(itemId, newPos) => onPlaceItem(itemId, newPos)}
-            onRotate={(itemId, rotation) => onPlaceItem(itemId, { x: roomItem.x, y: roomItem.y, rotation })}
           />
         )
       })}
