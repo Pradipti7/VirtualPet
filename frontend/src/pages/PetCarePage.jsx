@@ -9,6 +9,7 @@ import ActionButtons from '../components/ActionButtons'
 import MemoryGame from '../components/MemoryGame'
 import Marketplace from '../components/Marketplace'
 import Inventory from '../components/Inventory'
+import DraggableItem from '../components/DraggableItem'
 import useBallAnimation from '../hooks/useBallAnimation'
 import useFoodAnimation from '../hooks/useFoodAnimation'
 import { MARKETPLACE_ITEMS } from '../data/marketplace'
@@ -301,19 +302,12 @@ function PetCarePage({ pet, onAction, onMiniGameReward, onBuyItem, onSellItem, o
         const itemData = MARKETPLACE_ITEMS.find(i => i.id === roomItem.itemId)
         if (!itemData) return null
         return (
-          <div
+          <DraggableItem
             key={`${roomItem.itemId}-${idx}`}
-            className="absolute z-10 pointer-events-none pet-bubble-pop"
-            style={{
-              left: roomItem.x,
-              top: roomItem.y,
-              transform: 'translate(-50%, -50%)',
-            }}
-          >
-            <div className="text-4xl drop-shadow-lg" title={itemData.name}>
-              {itemData.emoji}
-            </div>
-          </div>
+            item={roomItem}
+            itemData={itemData}
+            onMove={(itemId, newPos) => onPlaceItem(itemId, newPos)}
+          />
         )
       })}
     </div>

@@ -5,11 +5,7 @@ function Inventory({ inventory, roomItems, onPlace, onRemove, onSell, onClose })
   const getItemData = (itemId) => MARKETPLACE_ITEMS.find(i => i.id === itemId)
 
   const handlePlace = (itemId) => {
-    const usedPositions = (roomItems || []).map(r => `${r.x},${r.y}`)
-    const available = ROOM_POSITIONS.find(p => !usedPositions.includes(`${p.x},${p.y}`))
-    if (available) {
-      onPlace(itemId, { x: available.x, y: available.y })
-    }
+    onPlace(itemId, { x: '50%', y: '75%' })
   }
 
   const handleRemove = (itemId) => {
