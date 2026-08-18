@@ -307,6 +307,7 @@ function PetCarePage({ pet, onAction, onMiniGameReward, onBuyItem, onSellItem, o
             item={roomItem}
             itemData={itemData}
             onMove={(itemId, newPos) => onPlaceItem(itemId, newPos)}
+            onRotate={(itemId, rotation) => onPlaceItem(itemId, { x: roomItem.x, y: roomItem.y, rotation })}
           />
         )
       })}

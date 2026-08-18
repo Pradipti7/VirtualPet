@@ -1,16 +1,20 @@
 import { useState, useRef, useEffect } from 'react'
 
-function DraggableItem({ item, itemData, onMove }) {
+function DraggableItem({ item, itemData, onMove, onRotate }) {
   const [isDragging, setIsDragging] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
   const [position, setPosition] = useState({ x: item.x, y: item.y })
+  const [rotation, setRotation] = useState(item.rotation || 0)
   const dragOffset = useRef({ x: 0, y: 0 })
   const elementRef = useRef(null)
 
   useEffect(() => {
     setPosition({ x: item.x, y: item.y })
-  }, [item.x, item.y])
+    setRotation(item.rotation || 0)
+  }, [item.x, item.y, item.rotation])
 
   const handlePointerDown = (e) => {
+    if (e.target.closest('.rotate-btn')) return
     e.preventDefault()
     e.stopPropagation()
     setIsDragging(true)
@@ -38,7 +42,15 @@ function DraggableItem({ item, itemData, onMove }) {
     if (!isDragging) return
     e.preventDefault()
     setIsDragging(false)
-    onMove(item.itemId, { x: position.x, y: position.y })
+    onMove(item.itemId, { x: position.x, y: position.y, rotation })
+  }
+
+  const handleRotate = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const newRotation = (rotation + 45) % 360
+    setRotation(newRotation)
+    onRotate(item.itemId, newRotation)
   }
 
   return (
@@ -48,19 +60,29 @@ function DraggableItem({ item, itemData, onMove }) {
       style={{
         left: position.x,
         top: position.y,
-        transform: 'translate(-50%, -50%)',
+        transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
         cursor: isDragging ? 'grabbing' : 'grab',
       }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <div
-        className={`flex flex-col items-center transition-transform ${isDragging ? 'scale-125' : 'hover:scale-110'}`}
-      >
+      <div className={`flex flex-col items-center transition-transform ${isDragging ? 'scale-125' : 'hover:scale-110'}`}>
         <div className="text-5xl drop-shadow-lg">{itemData.emoji}</div>
       </div>
+      {isHovered && !isDragging && (
+        <button
+          className="rotate-btn absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center text-xs hover:bg-blue-100 transition-colors"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={handleRotate}
+          title="Rotate"
+        >
+          🔄
+        </button>
+      )}
     </div>
   )
 }
