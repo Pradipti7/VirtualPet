@@ -11,6 +11,11 @@ export const MARKETPLACE_ITEMS = [
   { id: 'toy-mouse', name: 'Toy Mouse', emoji: '🐭', price: 5, category: 'toys', description: 'A squeaky mouse toy' },
   { id: 'scratching-post', name: 'Scratching Post', emoji: '🪵', price: 14, category: 'furniture', description: 'A post to scratch and climb' },
   { id: 'lamp', name: 'Lamp', emoji: '💡', price: 9, category: 'decor', description: 'A warm lamp for the room' },
+  { id: 'frame-sunset', name: 'Sunset Painting', emoji: '🖼️', price: 18, category: 'frames', description: 'A cat watching the sunset', frameType: 'sunset', petEmoji: '🐱' },
+  { id: 'frame-mountain', name: 'Mountain Painting', emoji: '🖼️', price: 20, category: 'frames', description: 'A dog in the mountains', frameType: 'mountain', petEmoji: '🐶' },
+  { id: 'frame-flower', name: 'Flower Painting', emoji: '🖼️', price: 16, category: 'frames', description: 'A bunny among flowers', frameType: 'flower', petEmoji: '🐰' },
+  { id: 'frame-ocean', name: 'Ocean Painting', emoji: '🖼️', price: 22, category: 'frames', description: 'A bird at the beach', frameType: 'ocean', petEmoji: '🐦' },
+  { id: 'frame-starry-night', name: 'Starry Night Painting', emoji: '🖼️', price: 24, category: 'frames', description: 'A hamster under the stars', frameType: 'starry-night', petEmoji: '🐹' },
 ]
 
 export const CATEGORIES = [
@@ -19,6 +24,7 @@ export const CATEGORIES = [
   { id: 'accessories', label: 'Accessories', emoji: '👒' },
   { id: 'toys', label: 'Toys', emoji: '🎾' },
   { id: 'decor', label: 'Decor', emoji: '🪴' },
+  { id: 'frames', label: 'Frames', emoji: '🖼️' },
 ]
 
 export const ROOM_POSITIONS = [
