@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import PixelFrame from './PixelFrame'
 
 const MIN_SCALE = 0.5
 const MAX_SCALE = 2.5
@@ -124,7 +125,14 @@ function DraggableItem({ item, itemData, onMove }) {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className={`flex flex-col items-center transition-transform ${isDragging ? 'scale-125' : 'hover:scale-110'}`}>
-        <div className="text-5xl drop-shadow-lg">{itemData.emoji}</div>
+        {itemData.frameType ? (
+          <div className="relative">
+            <PixelFrame type={itemData.frameType} className="w-16 h-16 drop-shadow-lg" />
+            <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl drop-shadow-md select-none pointer-events-none">{itemData.petEmoji}</span>
+          </div>
+        ) : (
+          <div className="text-5xl drop-shadow-lg">{itemData.emoji}</div>
+        )}
       </div>
       {isHovered && !isDragging && (
         <>
